@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Drawing - Philae, Kiosk of Nectanebo I - Aegaron</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles OLD
+    <link href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/css/bootstrap-responsive.css" rel="stylesheet">-->
+	<!-- Customized bootstrap--> 
+    <link href="http://dev.aegaron.ucla.edu/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+	<!-- Aegaron Style -->
+    <link type="text/css" rel="stylesheet" href="http://dev.aegaron.ucla.edu/css/aegaron.css" />
+	<!-- Relocated JS includes to footer -->
+	
+	
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons CURRENTLY UNUSED
+    <link rel="shortcut icon" href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/ico/apple-touch-icon-57-precomposed.png"> -->
+	
+    <!-- Simple OpenID Selector CURRENTLY UNUSED
+    <link type="text/css" rel="stylesheet" href="http://dev.aegaron.ucla.edu/css/openid.css" />
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/js/jquery-1.2.6.min.js"></script>
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/js/openid-jquery.js"></script>
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/js/openid-en.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			openid.init('openid_identifier');
+			openid.setDemoMode(false); // [true is default] Stops form submission for client javascript-only test purposes
+		});
+	</script>--> 
+
+<!-- ------------------------------------------------------------------------------------------------------ -->	    
+			<meta http-equiv='imagetoolbar' content='no'/>
+			<style type="text/css"> v\:* {behavior:url(#default#VML);}
+		    	/*
+				html, body { overflow: hidden; padding: 0; height: 100%; width: 100%; font-family: Arial,Verdana,sans-serif; }
+				body { margin: 10px; background: #000; color: #fff; }
+ 				h1 { margin: 0; padding: 6px; border:0; font-size: 20pt; }
+ 				#header { height: 43px; padding: 0; background-color: #000; border: none; }
+				#subheader { height: 12px; text-align: right; font-size: 10px; color: #555;}
+				*/
+				#map { height: 85%; }
+			</style>	
+<!-- ------------------------------------------------------------------------------------------------------ -->
+
+<!-- ------------------------------------------------------------------------------------------------------ -->
+
+
+<!-- ------------------------------------------------------------------------------------------------------ -->		    
+
+			<!-- Map Stuff: created map.php file as an include on map javascript functions. yk/rc 5/9/2013 -->
+			<!--
+	Maps code authored by Yoh (May 2013)
+	Relevant files:
+		templates/map.php:  all the javascript code to render the maps
+		templates/header.php:  includes this file (line 65)
+		templates/fullscreen-header.php
+		templates/footer.php:  includes the javascript calls to jquery and jrotate.js
+		templates/fullscreen-footer.php
+		welcome/drawing.php:  the html of all the components that make up the single and dual maps
+		welcome/fullscreen-drawing.php
+		
+-->
+
+<!-- Google Maps API Call -->
+<script src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+
+<style type="text/css">
+	#map-holder img {
+		  max-width: none; 
+	}
+	#map{width:100%;height:1200px;position:absolute;top:50%;margin-top:-600px;}
+	#map2{width:1200px;height:1200px;position:absolute;top:50%;left:50%;margin-top:-600px;margin-left:-600px;}
+    #map3{width:1200px;height:1200px;position:absolute;top:50%;left:50%;margin-top:-600px;margin-left:-600px;}
+    #mapcontainer1{width:100%;height:600px;background:#eee;position:relative;overflow:hidden;float:left;border:1px solid gray;}
+    #mapcontainer2-1{width:49%;height:600px;background:#eee;position:relative;overflow:hidden;float:left;border:1px solid gray;}
+    #mapcontainer2-2{width:49%;height:600px;background:#eee;position:relative;overflow:hidden;float:right;border:1px solid gray;}
+	.reticule {
+			    position:absolute;
+			    width:16px;
+			    height:16px;
+			    left:50%;
+			    top:50%;
+			    margin-top:-8px;
+			    margin-left:-8px;
+			    }	
+	#control {
+		    background:#FFF;
+		    position:absolute;
+		    right:10px;
+		    top:160px;
+		    z-index:10;
+		    height:200px;
+		    width:28px;
+		    border:1px solid #BBB;
+		    -webkit-border-radius:3px;
+		            border-radius:3px;
+	}
+	#handle {
+		      background:#000;
+		      position: absolute;
+		      left:0;
+		      top:20px;
+		      width:28px;
+		      height:10px;
+	      }
+	#handle:hover {
+	      cursor:pointer;
+	      background:#444;
+	      cursor:ns-resize;
+	}
+</style>
+
+
+<script type="text/javascript">
+
+	var map;
+	var map2;
+	var map3;
+	var viewState;
+	
+	//These viariables need to be set dynamically based on what plan was chosen:
+		var centerLatLon = new google.maps.LatLng(24.024467922918383,32.883645948410035);
+	var zoomLevel = 20;
+	var tileURL = 'http://tiles.ats.ucla.edu/tiles/Aegaron_0002/';
+	var eastBL = 32.883870;
+	var westBL = 32.883512;
+	var northBL = 24.024598;
+	var southBL = 24.024366;
+
+	var planOverlay = new google.maps.ImageMapType(
+	{
+		getTileUrl: function(ll, z) 
+		{
+			var X = ll.x % (1 << z);  // wrap
+			return tileURL + z + "/" + X + "/" + ll.y + ".png";
+		},
+		tileSize: new google.maps.Size(256, 256),
+		isPng: true,
+		maxZoom: 22
+	});
+	
+	//default plan to map
+	var planMap = planOverlay;
+	var planOverlay2;
+	// map options	
+	var myOptions1,myOptions2,myOptions3;
+
+	// photo stream simulation of API feed
+	photos = [];
+	photo1 = {
+		url: 'images/IMG_1789.jpg',
+		thumburl: 'images/square/IMG_1789.jpg',
+		lat: 24.024439553569067,
+		lng: 32.88378730416298,
+		heading: -76
+	}
+	photo2 = {
+		url: 'images/IMG_1787.jpg',
+		thumburl: 'images/square/IMG_1787.jpg',
+		lat: 24.024446903131725,
+		lng: 32.883836925029755,
+		heading: -80
+	}
+	photo3 = {
+		url: 'images/IMG_1818.jpg',
+		thumburl: 'images/square/IMG_1818.jpg',
+		lat: 24.02458593227969,
+		lng: 32.88380675017834,
+		heading: 195
+	}
+	photo4 = {
+		url: 'images/IMG_1797.jpg',
+		thumburl: 'images/square/IMG_1797.jpg',
+		lat: 24.024411992705307,
+		lng: 32.88375545293093,
+		heading: 105
+	}
+	photo5 = {
+		url: 'images/IMG_1788.jpg',
+		thumburl: 'images/square/IMG_1788.jpg',
+		lat: 24.02445455892573,
+		lng: 32.88376618176699 ,
+		heading: 190
+	}
+	photo6 = {
+		url: 'images/IMG_1801.jpg',
+		thumburl: 'images/square/IMG_1801.jpg',
+		lat: 24.02445455892573,
+		lng: 32.88376618176699 ,
+		heading: 10
+	}
+	photo7 = {
+		url: 'images/IMG_1808.jpg',
+		thumburl: 'images/square/IMG_1808.jpg',
+		lat: 24.02449865629029,
+		lng: 32.88369258865714,
+		heading: 110
+	}
+	photo8 = {
+		url: 'images/IMG_1796.jpg',
+		thumburl: 'images/square/IMG_1796.jpg',
+		lat: 24.024424701326563,
+		lng: 32.883789483457804,
+		heading: -80
+	}
+
+	photos.push(photo1);
+	photos.push(photo2);
+	photos.push(photo3);
+	photos.push(photo4);
+	photos.push(photo5);
+	photos.push(photo6);
+	photos.push(photo7);
+	photos.push(photo8);
+
+	var photostream = {
+		photos: photos
+	}
+	console.log(photostream)
+
+	/* photo marker comes in 3 SVG parts: 
+		- the outer circle
+		- the inner circle
+		- the rotated inner triangle
+	*/
+	var photomarker1 = [];
+	var photomarker2 = [];
+	var photomarker3 = [];
+
+    function getRelatedPhotos()
+    {
+		$('#photostream').html('');
+		$.each(photostream.photos, function(i,val){
+			var photolatlng = new google.maps.LatLng(val.lat,val.lng);
+			//outer circle
+			photomarker1[i] = new google.maps.Marker({
+				position: photolatlng,
+				map: map,
+				icon: {
+					path: google.maps.SymbolPath.CIRCLE,
+					scale: 30,
+					fillColor: 'black',
+					fillOpacity: 0.2,
+					strokeColor: 'black',
+					strokeOpacity: 0.4,
+					strokeWeight: 3
+				},
+				visible: false
+			});
+
+			//rotatable inner triangle
+			photomarker2[i] = new google.maps.Marker({
+				position: photolatlng,
+				map: map,
+				icon: {
+					path: google.maps.SymbolPath.BACKWARD_OPEN_ARROW,
+					scale: 7,
+					fillColor: '#3366FF',
+					fillOpacity: 0.6,
+					strokeColor: 'white',
+					strokeOpacity: 0.8,
+					strokeWeight: 2,
+					rotation: val.heading
+				},
+				visible: false
+			});
+
+			//inner circle
+			photomarker3[i] = new google.maps.Marker({
+				position: photolatlng,
+				map: map,
+				icon: {
+					path: google.maps.SymbolPath.CIRCLE,
+					scale: 5,
+					fillColor: '#3366FF',
+					fillOpacity: 0.8,
+					strokeColor: 'white',
+					strokeOpacity: 0.8,
+					strokeWeight: 2
+				},
+				visible: false
+			});
+			$('#photostream').append('<img id="photo-'+i+'" onmouseover="showPhotoOnMap('+i+')" onmouseout="hidePhotoOnMap('+i+')" onclick="showPhotoPopup('+i+')" src="'+val.thumburl+'" style="opacity:0.5;">');
+		})
+    }
+
+    function showPhotoPopup(i)
+    {
+    	$('#myModal').modal('toggle');
+    	$('#photodiv').html('<img src="'+photos[i].url+'">');
+    }
+
+    function showPhotoOnMap(i)
+    {
+    	// map.setZoom(22)
+    	$('#photo-'+i).animate({opacity:1,width:'140px',top:'0px'})
+    	photomarker1[i].setVisible(true);
+    	photomarker2[i].setVisible(true);
+    	photomarker3[i].setVisible(true);
+    	// map.panTo(new google.maps.LatLng(photos[i].lat,photos[i].lng));
+    }
+
+    function hidePhotoOnMap(i)
+    {
+    	$('#photo-'+i).animate({opacity:0.5,width:'120px',top:'0px'})
+    	photomarker1[i].setVisible(false);
+    	photomarker2[i].setVisible(false);
+    	photomarker3[i].setVisible(false);
+    	// map.panTo(new google.maps.LatLng(photos[i].lat,photos[i].lng));
+    }
+
+	function getRelatedPlans()
+	{
+
+		// var url = 'http://digidev.library.ucla.edu/axis2/services/AegaronServiceProvider/getPlanGeospatialMetadataByBoundingBox?northBL='+northBL+'&southBL='+southBL+'&eastBL='+eastBL+'&westBL='+westBL+'&response=application/json';
+		var url = 'http://dlws.library.ucla.edu/axis2/services/AegaronServiceProvider/getPlanGeospatialMetadataByBoundingBox?northBL='+northBL+'&southBL='+southBL+'&eastBL='+eastBL+'&westBL='+westBL+'&response=application/json';
+		encodedurl = 'http://dev.aegaron.ucla.edu/application/views/templates/proxy_json.php?url='+encodeURIComponent(url);
+		
+		$.getJSON(encodedurl,function(data){
+			$.each(data.return,function(i,item){
+                $("#changecompare").append('<option value='+item.id+'>'+item.title+' ('+item.drawingNumber+')</option>');
+            })
+		});
+	}
+	
+	function switchCompareMap()
+	{
+		var compareID = $('#changecompare').val();
+
+		// var url = 'http://digidev.library.ucla.edu/axis2/services/AegaronServiceProvider/getPlanGeospatialMetadata?ark='+compareID+'&response=application/json';
+		var url = 'http://dlws.library.ucla.edu/axis2/services/AegaronServiceProvider/getPlanGeospatialMetadata?ark='+compareID+'&response=application/json';
+		encodedurl = 'http://dev.aegaron.ucla.edu/application/views/templates/proxy_json.php?url='+encodeURIComponent(url);
+		
+		$.getJSON(encodedurl,function(data){
+			var tileurl2 = data.return.urlForTitles;
+			planOverlay2 = new google.maps.ImageMapType(
+			{
+				getTileUrl: function(ll, z) 
+				{
+					var X = ll.x % (1 << z);  // wrap
+					return tileurl2 + z + "/" + X + "/" + ll.y + ".png";
+				},
+				tileSize: new google.maps.Size(256, 256),
+				isPng: true,
+				maxZoom: 22
+			});
+			
+			switchMap(planOverlay2,map3);
+		});
+	}
+	
+	function disableSync()
+	{
+	    google.maps.event.clearListeners(map2, 'center_changed');
+	    google.maps.event.clearListeners(map2, 'zoom_changed');
+	}
+		
+	function enableSync()
+	{
+	    map3.panTo(map2.getCenter());
+	    map3.setZoom(map2.getZoom());
+	    //adding event listener to sync maps
+	    google.maps.event.addListener(map2, 'center_changed', function(event) {
+	       map3.panTo(map2.getCenter());
+	    });
+	    google.maps.event.addListener(map2, 'zoom_changed', function(event) {
+			map3.setZoom(map2.getZoom());
+		}); 
+	}
+	
+	function rotate(num)
+	{
+	    var curangle = $('#map2').getRotateAngle();
+	    var nextangle = Number(curangle) + Number(num);
+	    if(num === 0) nextangle = 0;
+	
+	    $('#map').rotate({
+	        angle: curangle, 
+	        animateTo: nextangle
+	    })
+	    $('#map2').rotate({
+	        angle: curangle, 
+	        animateTo: nextangle
+	    })
+	    $('#map3').rotate({
+	        angle: curangle, 
+	        animateTo: nextangle
+	    })
+	}
+
+	function dualView(viewState)
+	{
+		if (viewState == 0)
+		{
+			$('#mapcontainer2').hide();
+			$('#mapcontainer').show();
+			$('#map-nav2').hide();
+			$('#map-nav').show();
+			map = new google.maps.Map(document.getElementById("map"), myOptions1);
+			switchMap(planOverlay,map);
+		}
+		else if (viewState == 1)
+		{
+			$('#mapcontainer').hide();
+			$('#mapcontainer2').show();
+			$('#map-nav').hide();
+			$('#map-nav2').show();
+			map2 = new google.maps.Map(document.getElementById("map2"), myOptions2);
+			map3 = new google.maps.Map(document.getElementById("map3"), myOptions3);
+			enableSync();
+			switchMap(planOverlay,map2);
+			enforceMaxZoom(map2,true);
+			enforceMaxZoom(map3,false);
+
+			
+		}
+	}
+	
+    function init(){
+    	
+		myOptions1 = {
+			zoom: zoomLevel,
+			center: centerLatLon,
+		    mapTypeId: google.maps.MapTypeId.ROADMAP,
+		    mapTypeControl: false,
+		    mapTypeControlOptions: {
+		      style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+		    },
+		    panControl: false,
+		    zoomControl: false,
+			zoomControlOptions: {
+				style: google.maps.ZoomControlStyle.SMALL
+			},
+			maxZoom: 24
+		};
+		map = new google.maps.Map(document.getElementById("map"), myOptions1);
+		switchMap(planOverlay,map);
+		
+		myOptions2 = {
+			zoom: zoomLevel,
+			center: centerLatLon,
+		    mapTypeId: google.maps.MapTypeId.HYBRID,
+		    mapTypeControl: true,
+		    mapTypeControlOptions: {
+		      style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+		    },
+		    panControl: false,
+		    zoomControl: true,
+			zoomControlOptions: {
+				style: google.maps.ZoomControlStyle.SMALL
+			},
+			maxZoom: 24
+		};
+		// map2 = new google.maps.Map(document.getElementById("map2"), myOptions2);
+		//switchMap(planOverlay);
+		
+		myOptions3 = {
+			zoom: zoomLevel,
+			center: centerLatLon,
+		    mapTypeId: google.maps.MapTypeId.HYBRID,
+		    mapTypeControl: true,
+		    mapTypeControlOptions: {
+		      style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+		    },
+		    panControl: false,
+		    zoomControl: true,
+			zoomControlOptions: {
+				style: google.maps.ZoomControlStyle.SMALL
+			},
+			maxZoom: 24			
+		};
+		// map3 = new google.maps.Map(document.getElementById("map3"), myOptions3);
+		
+		enforceMaxZoom(map,true);
+		
+		//get related plans for dual view drop down
+		getRelatedPlans();
+		getRelatedPhotos();
+
+		//click event for debug
+		google.maps.event.addListener(map, 'click', function (event) {
+	        console.log(event.latLng.lat());
+	        console.log(event.latLng.lng());
+
+	    });
+    }
+
+	function enforceMaxZoom(map,switch2map)
+	{
+		//attempting to allow maxzoom beyond 21 (buggy)
+	    google.maps.event.addListener(map, 'tilesloaded', function (event) {
+	        var mapTypeRegistry = map.mapTypes;
+	        var currentMapTypeId = map.getMapTypeId();
+	        var mapType = mapTypeRegistry.get(currentMapTypeId);
+	        mapType.maxZoom = 24;
+
+	    });
+	    
+	    google.maps.event.addListener(map, 'maptypeid_changed', function (event) {
+	        map.setOptions({ maxZoom: 24 });
+	    });
+
+		// max zoom to 24 only works when you switch away from map type to satellite type and back to map type
+		// this "hack" will automate the switch to force maxzoom 24
+		var defaultzoom = map.getZoom();
+		setTimeout(function(){
+			map.setMapTypeId(google.maps.MapTypeId.SATELLITE)
+			setTimeout(function(){
+				if(switch2map)
+				{
+					map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+				}
+				if(defaultzoom != map.getZoom())
+				{
+					map.setZoom(defaultzoom);
+				}
+				
+				},100);
+			
+		},1000);		
+	}
+	function switchMap(planOverlay,map)
+	{
+		
+		map.overlayMapTypes.setAt(0, null);
+		map.overlayMapTypes.insertAt(0, planOverlay);
+	    var handle = document.getElementById('handle'),
+	        start,
+	        startTop;
+	
+	    document.onmousemove = function(e) {
+	        if (!start) return;
+	        // Adjust control
+	        handle.style.top = Math.max(-5, Math.min(195, startTop + parseInt(e.clientY, 10) - start)) + 'px';
+	        // Adjust opacity
+	        planOverlay.setOpacity(1 - (handle.offsetTop / 200));
+	        // map.parent.style.cursor = 'ns-resize';
+	    }
+	
+	    handle.onmousedown = function(e) {
+	        // Record initial positions
+	        start = parseInt(e.clientY, 10);
+	        startTop = handle.offsetTop - 5;
+	        return false;
+	    }
+	
+	    document.onmouseup = function(e) {
+	        start = null;
+	    }
+	}
+	
+	function toggleSync()
+	{
+		if($('#sync').html() == 'Sync Maps')
+		{
+			$('#sync').html('Disable Sync');
+			enableSync();
+		}
+		else
+		{
+			$('#sync').html('Sync Maps');
+			disableSync();
+		}
+	}
+</script>
+
+<!-- ------------------------------------------------------------------------------------------------------ -->		    
+	
+
+  </head>
+
+<body onload="init()"><!-- bootstrap header/old nav saved to old_nav.php -->
+<div id="wrap" style="padding:10px;"> <!-- part of flush footer (not working with just bootstrap. See CSS fix-->
+    <div class="navbar navbar-fixed-top" style="display:none;">
+      <div class="navbar-inner">
+        <div class="container">
+			<!-- Header -->
+			<div class="row">
+				<div class="span2 logo">
+					<a href="http://dev.aegaron.ucla.edu/index.php/welcome"><img src="http://dev.aegaron.ucla.edu/images/logo.png" border="0" height="160" width="554" alt="Aegaron logo"></a>
+				</div>
+								<div class="span2 offset1">
+					<br/>
+					<a href="http://dev.aegaron.ucla.edu/index.php/welcome/browse">BROWSE</a>
+					<p>Explore the Archive</p>
+				</div>
+				<div class="span2">
+					<br/>
+					<a href="http://dev.aegaron.ucla.edu/index.php/welcome/search">SEARCH</a>
+					<p>Find Drawings</p>
+				</div>
+								<div class="span3" id="quickSearch">
+									<br/>
+					<form action="http://dev.aegaron.ucla.edu/index.php/welcome/search" class="form-search" method="post">
+						<input type="hidden" name="search_type" id="search_type" value="searchDrawing">
+						<input type="text" class="input-small search-query" placeholder='Quick Search' name='term_value'>
+						<button type="submit" class="btn"><i class="icon-search"></i></button>
+						<!--
+						<input class='span2' id='appendedInputButton' size='16' type='text' maxlength='250' name='term_value'>
+						<input type='submit' class='btn' value='Search'> -->
+						<!-- <div class="input-append">
+							<input class='span2' id='appendedInputButton' size='16' type='text' maxlength='250' name='term_value'><input type='submit' class='btn' value='Search'>						</div> -->
+					</form>
+								</div>
+			</div> <!-- Header -->
+        </div>
+      </div>
+    </div>
+
+<div><div><div><h1>Philae, Kiosk of Nectanebo I</h1></div></div><div>
+<div style='overflow:hidden;'>
+<!-- include the map code -->
+
+
+	<!-- Map -->
+
+<div id="master-map-container" style="position: relative" >
+	
+	<!-- transparency slider -->
+	<div id='control'>
+	    <div id='handle'></div>
+	</div>
+
+
+	<!-- single map -->
+	<!-- map navigation bar -->
+	<div id="map-nav" class="well container-fluid">
+		<!-- <input type="radio" id="radio01" name="radio" checked="checked" /><label for="radio01">Single View</label>
+		<input type="radio" id="radio02" name="radio" /><label for="radio01">Dual View</label> -->
+		<span class="btn btn-small" onclick="dualView(0)"><i class="icon-stop"></i> Single View</span>
+		<span class="btn btn-small" onclick="dualView(1)"><i class="icon-stop"></i><i class="icon-stop"></i> Dual View</span>
+		|
+		<!-- rotate the maps -->
+          <span class="btn btn-small btn-info" onclick="rotate(-5);"><i class="icon-arrow-left icon-white"></i></span>
+          <span class="btn btn-small btn-info" onclick="rotate(0);"><i class="icon-refresh icon-white"></i>rotate</span>
+          <span class="btn btn-small btn-info" onclick="rotate(5);"><i class="icon-arrow-right icon-white"></i></span>
+
+		<!-- show full screen button -->
+		
+
+	</div>
+	
+	<!-- dual map navigation -->
+	<div id = "map-nav2" style="display:none;" class="well container-fluid">
+		<span class="btn btn-small" onclick="dualView(0)"><i class="icon-stop"></i> Single View</span>
+		<span class="btn btn-small" onclick="dualView(1)"><i class="icon-stop"></i><i class="icon-stop"></i> Dual View</span>
+		|
+          <span id="sync" class="btn btn-small" onclick="toggleSync()">Disable Sync</span>
+          <!-- <span class="btn btn-small btn-inverse" onclick="disableSync()">Unsync Maps</span> -->
+		|
+		<!-- rotate the maps -->
+          <span class="btn btn-small btn-info" onclick="rotate(-5);"><i class="icon-arrow-left icon-white"></i></span>
+          <span class="btn btn-small btn-info" onclick="rotate(0);"><i class="icon-refresh icon-white"></i>rotate</span>
+          <span class="btn btn-small btn-info" onclick="rotate(5);"><i class="icon-arrow-right icon-white"></i></span>
+		<!-- show full screen button -->
+		
+
+	</div>
+	
+	<div id="map-nav3" class="well" style="display:none;">single | dual</div>
+
+	<!-- map container for single map view -->
+	<div id="mapcontainer" style="position: relative;">
+		<div style="float: left;position: absolute;margin-top: 10px;margin-left: 10px;z-index: 100;">
+			<button class="btn btn-mini btn-inverse" onclick="map.setZoom(map.zoom+1)"><i class="icon-zoom-in icon-white"></i></button>
+			<button class="btn btn-mini btn-inverse" onclick="map.setZoom(map.zoom-1)"><i class="icon-zoom-out icon-white"></i></button>
+			<button class="btn btn-mini btn-inverse" onclick="map.setMapTypeId(google.maps.MapTypeId.ROADMAP)">map</button>
+			<button class="btn btn-mini btn-inverse" onclick="map.setMapTypeId(google.maps.MapTypeId.SATELLITE)">satellite</button>
+		</div>
+		<div style="clear: both;"></div>
+		<div id="mapcontainer1">
+			<div id="map">This will be a map</div>
+			<div class="reticule"></div>
+
+			<!-- photo stream -->
+			<div id="photostream" style="position:absolute;bottom:0px;width:100%;height:140px;background:rgba(0,0,0,.5);">
+
+			</div>
+
+		</div>
+
+		<!-- <div id="map" style="background-color: gray;width:100%;height:600px;"></div> -->
+
+		
+	</div>
+	
+	<!-- map container for dual map view -->
+	<div id="mapcontainer2" style="position: relative;display:none;">
+		<div style="float: left;position: absolute;margin-top: 10px;margin-left: 10px;z-index: 100;">
+			<button class="btn btn-mini btn-inverse" onclick="map2.setZoom(map2.zoom+1)"><i class="icon-zoom-in icon-white"></i></button>
+			<button class="btn btn-mini btn-inverse" onclick="map2.setZoom(map2.zoom-1)"><i class="icon-zoom-out icon-white"></i></button>
+			<button class="btn btn-mini btn-inverse" onclick="map2.setMapTypeId(google.maps.MapTypeId.ROADMAP)">map</button>
+			<button class="btn btn-mini btn-inverse" onclick="map2.setMapTypeId(google.maps.MapTypeId.SATELLITE)">satellite</button>
+		</div>
+		<div style="float: right;position: absolute;margin-top: 10px;right: 10px;z-index: 100;">
+			<select class="span2" style="margin-bottom:0px;" onChange="switchCompareMap()" id="changecompare">
+				<option value=1>Satellite</option> 
+			</select>
+			<button class="btn btn-mini btn-inverse" onclick="map3.setZoom(map3.zoom+1)"><i class="icon-zoom-in icon-white"></i></button>
+			<button class="btn btn-mini btn-inverse" onclick="map3.setZoom(map3.zoom-1)"><i class="icon-zoom-out icon-white"></i></button>
+			<button class="btn btn-mini btn-inverse" onclick="map3.setMapTypeId(google.maps.MapTypeId.ROADMAP)">map</button>
+			<button class="btn btn-mini btn-inverse" onclick="map3.setMapTypeId(google.maps.MapTypeId.SATELLITE)">satellite</button>
+		</div>
+		<div style="clear: both;"></div>
+		<div id="mapcontainer2-1"><div id="map2">This will be a map</div><div class="reticule"></div></div>
+    	<div id="mapcontainer2-2"><div id="map3">This will be a map</div><div class="reticule"></div></div>
+
+
+
+		
+	</div>
+</div>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+  </div>
+  <div class="modal-body" id="photodiv">
+  </div>
+</div>
+
+
+</div></div></div>
+
+
+
+
+<!--
+For info on twitter-bootstrap grid system go to: http://twitter.github.com/bootstrap/scaffolding.html
+-->
+
+</div> <!-- wrap element see header -->
+<div class="footer ag_bgfooter" style="display:none;">
+	<div class="container">
+		<div class="row">
+			<div class="span2 offset1">
+			<!-- square 1 -->
+				<div class="row">
+					<div class="span2">
+						<h5>Project created by</h5>
+					</div>
+				</div>				
+				<div class="row">
+					<div class="span1 ag_footer">		
+						<p></p>
+					</div>
+				</div>		   
+				<div class="row">
+					<div class="span1">
+						<a href="http://www.dainst.org/en/">
+							<img src="http://dev.aegaron.ucla.edu/images/logos/DAI-UNOFFICIAL!.jpg" border="0" width="216" height="125" alt="German Archaeological Institute (DAI)">
+						</a>
+					</div>	
+					<div class="span1">
+					    <br>
+						<a href="http://www.ucla.edu">
+							<img src="http://dev.aegaron.ucla.edu/images/logos/ucla_wc125.gif" border="0" alt="University of California Los Angeles">
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="span2">
+			<!-- square 2 -->
+				<h5>Quick Links</h5>
+				<ul class="ag_footer">
+					<li><a href="http://dev.aegaron.ucla.edu/index.php/welcome/browse">Browse</a></li>
+					<li><a href="http://dev.aegaron.ucla.edu/index.php/welcome/search">Search</a></li>
+					<li><a href="http://dev.aegaron.ucla.edu/index.php/welcome/about">About</a></li>
+					<li><a href="http://dev.aegaron.ucla.edu/index.php/welcome/team">Team</a></li>
+				</ul>
+			</div>
+			<div class="span3">
+			<!-- square 3 -->
+				<div class="row">
+					<div class="span3">
+						<h5>Generous support from</h5>
+					</div>
+				</div>	
+				<div class="row">
+					<div class="span3 ag_footer">		
+						<p></p>
+					</div>
+				</div>		   
+				<div class="row">	
+					<div class="span1">
+						<a href="http://www.dfg.de/en/index.jsp">
+							<img src="http://dev.aegaron.ucla.edu/images/logos/dfg_logo_blau.jpg" border="0" width="100" height="35" alt="The Deutsche Forschungsgemeinschaft">
+						</a>
+					</div>
+					<div class="span2">
+						<a href="http://www.neh.gov/">
+							<img src="http://dev.aegaron.ucla.edu/images/logos/neh_logo_stckd.jpg" border="0" width="100" height="100" alt="The National Endowment for the Humanities (NEH)">
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="span4">
+				<h5>Related Links</h5>
+				<ul class="ag_footer">
+					<li><a href="http://www.dainst.org/en/home?ft=33">DAIK</a></li>
+					<li><a href="http://www.cdh.ucla.edu/">UCLA CDH</a></li>
+					<li><a href="https://idre.ucla.edu/people/hasis">UCLA IDRE HASIS</a></li>
+					<li><a href="http://www.uee.ucla.edu/">UCLA Encyclopedia of Egyptology</a></li>
+				</ul>
+			<!-- square 4 -->
+			</div>		
+		</div>
+	<!-- /container -->
+	</div>
+</div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/js/aegaron.js"></script>
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/js/jquery.js"></script>
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/js/jrotate.js"></script>
+	<script type="text/javascript" src="http://dev.aegaron.ucla.edu/bootstrap/js/bootstrap.min.js"></script>
+	
+	<!-- adjust map div sizes -->
+	<script type="text/javascript">
+
+		var map_newwidth=$('#map').width()*1.5;
+		$('#map').width(map_newwidth);
+		console.log(map_newwidth);
+		$('#map').css('margin-left',-(map_newwidth/2));
+		$('#map').css('left','50%');
+		google.maps.event.trigger(map, "resize");
+		
+	</script>
+
+	<!-- old JS includes from former bootstrap version 	
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/jquery.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-transition.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-alert.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-modal.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-dropdown.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-tab.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-tooltip.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-popover.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-button.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-collapse.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-carousel.js"></script>
+    <script src="http://dev.aegaron.ucla.edu/bootstrap/docs/assets/js/bootstrap-typeahead.js"></script>-->
+
+  </body>
+</html>
