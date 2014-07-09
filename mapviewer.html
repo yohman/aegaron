@@ -35,22 +35,31 @@ var layerlookup = [];
 var current_opacity = 1;
 
 // arcgis server url
-var arcgisserverurl = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite';
+var arcgisserverurl = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_maps';
 
 // launch of document ready
 $( document ).ready(function() {
 
 	// get the map id via url
 	mapid1 = aegaron.getUrlVar('mapid1');
+	mapid2 = aegaron.getUrlVar('mapid2');
 
 	// set a default map id if not provided
 	if(mapid1 == '') { mapid1 = 'Philae624'};
+
 
 	// initialize the map
     aegaron.getAllPlans();
 
 	aegaron.transparencySlider();
 
+	// if second map is requested, load dual view
+	if(mapid2 != '')
+	{
+		// aegaron.dualView(1);
+		$('#loading').modal('show');
+		setTimeout(function(){aegaron.dualView(1);$('#loading').modal('hide');},1500);
+	}
 });
 
 //detect when window has been resized
@@ -61,7 +70,6 @@ $( window ).resize(function() {
 //resize the map
 aegaron.resize = function()
 {
-	console.log('resizing...')
 	var height = $(window).height()-80;
 	$('#mapcontainer1-map').css('height',height);
 	$('#mapcontainer2-map1').css('height',height);
@@ -70,8 +78,9 @@ aegaron.resize = function()
 	$('#map2').css('height',height);
 	$('#map3').css('height',height);
 	map1.updateSize();
-	map2.updateSize();
-	map3.updateSize();
+
+	if(map2){map2.updateSize();};
+	if(map3){map3.updateSize();};
 }
 
 
@@ -79,7 +88,7 @@ aegaron.resize = function()
 var satlayers = new ol.layer.Tile({
 	mapid: 1,
 	source: new ol.source.XYZ({
-		url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/Philae_crop1/ImageServer/tile/{z}/{y}/{x}',
+		url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/Philae/ImageServer/tile/{z}/{y}/{x}',
 		maxZoom: 23
 	}),
 	visible: true
@@ -89,19 +98,19 @@ alllayers_map1.push(satlayers);
 alllayers_map2.push(satlayers);
 alllayers_map3.push(satlayers);
 layerlookup.push('satellite');
-// var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/00064_zoom23/ImageServer';
+// var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_maps/00064_zoom23/ImageServer';
 // var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/00064_23/ImageServer';
-var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/Philae624/ImageServer';
+var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_maps/Philae624/ImageServer';
 
 
-// var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/samplePhilae4/ImageServer';
+// var map1url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_maps/samplePhilae4/ImageServer';
 var planlayer1 = new ol.layer.Tile({
 	mapid: 1,
 	source: new ol.source.XYZ({
 
 
 		url: map1url+'/tile/{z}/{y}/{x}',
-		// url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/samplePhilae4/ImageServer/tile/{z}/{y}/{x}',
+		// url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_maps/samplePhilae4/ImageServer/tile/{z}/{y}/{x}',
 		maxZoom: 23
 	}),
 	visible: true
@@ -113,7 +122,7 @@ var planlayer2 = new ol.layer.Tile({
 
 
 		url: map1url+'/tile/{z}/{y}/{x}',
-		// url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/samplePhilae4/ImageServer/tile/{z}/{y}/{x}',
+		// url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_maps/samplePhilae4/ImageServer/tile/{z}/{y}/{x}',
 		maxZoom: 23
 	}),
 	visible: true
@@ -121,10 +130,8 @@ var planlayer2 = new ol.layer.Tile({
 
 aegaron.init = function()
 {
-	console.log('in...')
 	// call arcgis server to get all the plans
 	$.getJSON(map1url+'?f=pjson',function(data){
-		console.log(data.extent);
 
 		map1 = new ol.Map({
 			controls: ol.control.defaults().extend([
@@ -182,7 +189,7 @@ aegaron.getAllPlans = function()
 
 		$.each(data.services,function(i,item){
 			// just show the plan number
-			var displaystring = item.name.replace("aegaron_satellite/","");
+			var displaystring = item.name.replace("aegaron_maps/","");
 			var splitname = item.name.split("/");
 
 			// add to the drop down choices for all 3 map divs
@@ -246,16 +253,48 @@ aegaron.getAllPlans = function()
 						zoom: zoomLevel
 					})
 				});
+
+
+				map2 = new ol.Map({
+					target: 'map2',
+					layers: alllayers_map2,
+					view: new ol.View({
+						center: map1.getView().getCenter(),
+						zoom: zoomLevel
+					})
+				});
+
+				map3 = new ol.Map({
+					target: 'map3',
+					layers: alllayers_map3,
+					view: new ol.View({
+						center: [3661007.016884186,2756199.9961588327], 
+						zoom: zoomLevel
+					})
+				});
+				map2.bindTo('layergroup',map1);
+				map2.bindTo('view',map1);
+				map3.bindTo('view',map2);
+
+
+
 				aegaron.drawLayerByPlanID('map1',mapid1);
+				// aegaron.drawLayerByPlanID('map2',mapid1);
+
+				// draw second map if dual view is on 
+				if(mapid2)
+				{
+					aegaron.drawLayerByPlanID('map3',mapid2);
+				};
 
 				// update the URL
 				map1.on('moveend', aegaron.setUrlVars);
 
 				// set the drop down values
 				$('#changecompare1').val(mapid1);
+				$('#changecompare2').val(mapid1);
+				$('#changecompare3').val(mapid2);
 
-				// size window based on client
-				aegaron.resize();
 
 			}
         })
@@ -268,9 +307,10 @@ aegaron.drawLayerByPlanID = function(whichmap,id)
 	{
 		// get existing plan id by array index
 		var index = layerlookup.indexOf(id);
-		var url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/'+ alllayers_map1[index].q.arcgis.name +'/ImageServer/';
+		var url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/'+ alllayers_map1[index].f.arcgis.name +'/ImageServer/';
+
+		// call arcgis to get layer extent, then fit to extent
 		$.getJSON(url+'?f=pjson',function(data){
-			console.log(data)
 			map1.getView().fitExtent([data.extent.xmin,data.extent.ymin,data.extent.xmax,data.extent.ymax,],map1.getSize());
 		});
 
@@ -291,9 +331,8 @@ aegaron.drawLayerByPlanID = function(whichmap,id)
 	{
 		// get existing plan id by array index
 		var index = layerlookup.indexOf(id);
-		var url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/'+ alllayers_map2[index].q.arcgis.name +'/ImageServer/';
+		var url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/'+ alllayers_map2[index].f.arcgis.name +'/ImageServer/';
 		$.getJSON(url+'?f=pjson',function(data){
-			console.log(data)
 			map1.getView().fitExtent([data.extent.xmin,data.extent.ymin,data.extent.xmax,data.extent.ymax,],map1.getSize());
 		});
 		mapid1 = id;
@@ -314,11 +353,12 @@ aegaron.drawLayerByPlanID = function(whichmap,id)
 		// get existing plan id by array index
 		console.log(id)
 		var index = layerlookup.indexOf(id);
-		var url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/'+ alllayers_map3[index].q.arcgis.name +'/ImageServer/';
-		$.getJSON(url+'?f=pjson',function(data){
-			console.log(data)
-			map3.getView().fitExtent([data.extent.xmin,data.extent.ymin,data.extent.xmax,data.extent.ymax,],map3.getSize());
-		});
+		var url = 'http://whippet.ats.ucla.edu/arcgis/rest/services/'+ alllayers_map3[index].f.arcgis.name +'/ImageServer/';
+		// $.getJSON(url+'?f=pjson',function(data){
+		// 	console.log(data)
+		// 	map3.getView().fitExtent([data.extent.xmin,data.extent.ymin,data.extent.xmax,data.extent.ymax,],map3.getSize());
+		// });
+		mapid2 = id;
 
 		for(i in alllayers_map3)
 		{
@@ -330,47 +370,83 @@ aegaron.drawLayerByPlanID = function(whichmap,id)
 		// set requested plan to visible
 		alllayers_map3[index].setVisible(true);		
 	}	
+
+	// size window based on client
+	aegaron.resize();
+
 }
 
 aegaron.dualView = function(viewState)
 {
+
 	if (viewState == 0)
 	{
 		$('#mapcontainer2').hide();
 		$('#mapcontainer1').show();
-		// $('#map-nav2').hide();
+		$('#sync-nav').hide();
 		// $('#map-nav').show();
+		map1.updateSize();
+
 	}
 	else if (viewState == 1)
 	{
 		$('#mapcontainer1').hide();
 		$('#mapcontainer2').show();
 		$('#changecompare2').val(mapid1);
+		$('#sync-nav').show();
+		map2.updateSize();
+		map3.updateSize();
+
 		// $('#map-nav').hide();
 		// $('#map-nav2').show();
 
-		map2 = new ol.Map({
-			target: 'map2',
-			layers: alllayers_map2,
-			view: new ol.View({
-				center: map1.getView().getCenter(),
-				zoom: zoomLevel
-			})
-		});
+		// map2 = new ol.Map({
+		// 	target: 'map2',
+		// 	layers: alllayers_map2,
+		// 	view: new ol.View({
+		// 		center: map1.getView().getCenter(),
+		// 		zoom: zoomLevel
+		// 	})
+		// });
 
-		map3 = new ol.Map({
-			target: 'map3',
-			layers: alllayers_map3,
-			view: new ol.View({
-				center: [0,0],
-				zoom: zoomLevel
-			})
-		});
-		map2.bindTo('layergroup',map1);
-		map2.bindTo('view',map1);
+		// map3 = new ol.Map({
+		// 	target: 'map3',
+		// 	layers: alllayers_map3,
+		// 	view: new ol.View({
+		// 		center: [0,0],
+		// 		zoom: zoomLevel
+		// 	})
+		// });
+		// map2.bindTo('layergroup',map1);
+		// map2.bindTo('view',map1);
+		// map3.bindTo('view',map2);
+	}
+}
+
+var syncmaps = true;
+
+aegaron.toggleSyncMaps = function()
+{
+	if(syncmaps)
+	{
+		map3.unbindAll();
+		var oldView = map3.getView();
+		map3.setView(new ol.View({
+			center: oldView.getCenter().slice(),
+			resolution: oldView.getResolution(),
+			rotation: oldView.getRotation()
+		}));
+		$('#sync-button-text').html('Sync maps')
+		syncmaps = false;
+	}
+	else
+	{
 		map3.bindTo('view',map2);
+		$('#sync-button-text').html('Unsync maps')
+		syncmaps = true;
 	}
-	}
+
+}
 
 aegaron.getUrlVar = function(key)
 {
@@ -380,7 +456,7 @@ aegaron.getUrlVar = function(key)
 
 aegaron.setUrlVars=function(evt)
 {
-	var urlvars = 'mapviewer.html?mapid1='+mapid1+'&center='+map1.getView().getCenter()+'&zoom='+map1.getView().getZoom();
+	var urlvars = 'mapviewer.html?mapid1='+mapid1+'&mapid2='+mapid2+'&center='+map1.getView().getCenter()+'&zoom='+map1.getView().getZoom();
 	console.log(urlvars);
 	history.pushState(null, "A new title!", urlvars);
 }
@@ -390,36 +466,43 @@ aegaron.switchCompareMap=function(map)
 	if(map == 'map1')
 	{
 		var compareID = $('#changecompare1').val();
+		mapid1 = compareID;
+		aegaron.setUrlVars();
 		$('#changecompare2').val(compareID);
 		aegaron.drawLayerByPlanID('map1',compareID);
 	}
 	else if (map == 'map2')
 	{
 		var compareID = $('#changecompare2').val();
+		mapid1 = compareID;
+		aegaron.setUrlVars();
 		$('#changecompare1').val(compareID);
 		aegaron.drawLayerByPlanID('map1',compareID); // change map1 (not map2) because map1 and map2 are synced	
 	}
 	else if (map == 'map3')
 	{
 		var compareID = $('#changecompare3').val();
+		mapid2 = compareID;
+		aegaron.setUrlVars();
 		aegaron.drawLayerByPlanID('map3',compareID);		
 	}
 }
 
 aegaron.transparencySlider = function()
 {
-	var handle = document.getElementById('handle'),
+	var handle = document.getElementById('handle2'),
 		start,
-		startTop;
+		startLeft;
 
 	document.onmousemove = function(e) {
 
 		if (!start) return;
 		// Adjust control
-		handle.style.top = Math.max(-5, Math.min(175, startTop + parseInt(e.clientY, 10) - start)) + 40 + 'px';
+		handle.style.left = Math.max(0, Math.min(190, startLeft + parseInt(e.clientX, 10) - start)) + 40 + 'px';
 		// Adjust opacity
-
-		var opacity = 1 - ((handle.offsetTop-35) / 180);
+		var opacity = 1 - ((handle.offsetLeft-40) / 190);
+		console.log(handle.style.left)
+		console.log(opacity)
 
 		current_opacity = opacity;
 
@@ -439,14 +522,55 @@ aegaron.transparencySlider = function()
 
 	handle.onmousedown = function(e) {
 		// Record initial positions
-		start = parseInt(e.clientY, 0);
-		startTop = handle.offsetTop - 40;
+		start = parseInt(e.clientX, 0);
+		startLeft = handle.offsetLeft - 40;
 		return false;
 	}
 
 	document.onmouseup = function(e) {
 		start = null;
 	}	
+
+
+	// var handle = document.getElementById('handle'),
+	// 	start,
+	// 	startTop;
+
+	// document.onmousemove = function(e) {
+
+	// 	if (!start) return;
+	// 	// Adjust control
+	// 	handle.style.top = Math.max(-5, Math.min(175, startTop + parseInt(e.clientY, 10) - start)) + 40 + 'px';
+	// 	// Adjust opacity
+
+	// 	var opacity = 1 - ((handle.offsetTop-35) / 180);
+
+	// 	current_opacity = opacity;
+
+
+	// 	for(i in alllayers_map1)
+	// 	{
+	// 		if(i != 0)
+	// 		{
+	// 			alllayers_map1[i].setOpacity(opacity);
+	// 			alllayers_map2[i].setOpacity(opacity);
+	// 			alllayers_map3[i].setOpacity(opacity);
+	// 		}
+	// 	}
+
+	// 	// map.parent.style.cursor = 'ns-resize';
+	// }
+
+	// handle.onmousedown = function(e) {
+	// 	// Record initial positions
+	// 	start = parseInt(e.clientY, 0);
+	// 	startTop = handle.offsetTop - 40;
+	// 	return false;
+	// }
+
+	// document.onmouseup = function(e) {
+	// 	start = null;
+	// }	
 }
 
 aegaron.setOpacity = function(val)
@@ -470,7 +594,7 @@ aegaron.setOpacity = function(val)
 	}
 
 	// set the slider postion too
-	handle.style.top=180-(this_opacity*180)+35+'px';
+	handle2.style.left=190-(this_opacity*190)+40+'px';
 
 }
 
@@ -484,6 +608,26 @@ aegaron.setOpacity = function(val)
 	<div id="map-nav" class="">
 		<span class="btn btn-info btn-small" onclick="aegaron.dualView(0)"><span class="glyphicon glyphicon-stop"></span> Single View</span>
 		<span class="btn btn-info btn-small" onclick="aegaron.dualView(1)"><span class="glyphicon glyphicon-stop"></span><span class="glyphicon glyphicon-stop"></span> Dual View</span>
+		
+		<!-- sync map button -->
+		<span id="sync-nav" style="display:none;">
+			|
+			<span class="btn btn-info btn-small" onclick="aegaron.toggleSyncMaps()"><span class="glyphicon glyphicon-link"></span><span id="sync-button-text">Unsync Maps</span></span>
+		</span>
+
+		<!-- transparency slider -->
+		&nbsp|&nbsp &nbsp 
+		<span id='control-container2'>
+			<span onclick="aegaron.setOpacity(.1)" class="btn btn-info time-control left-border-radius" style=""><span class="glyphicon glyphicon-plus-sign"></span></span>
+			<div id='control2'>
+				<span style="color: #aaa;padding-top:15px;line-height: 34px;">transparency</span>
+				<span id='handle2'></span>
+			</div>
+			<span onclick="aegaron.setOpacity(-.1)" class="btn btn-info time-control right-border-radius" style=""><span class="glyphicon glyphicon-minus-sign"></span></span>
+		</span>
+
+
+		<!-- rotate instructions -->
 		<p>Use <code>Alt</code>+<code>Shift</code>+drag to rotate the map.</p>
 	</div>
 
@@ -492,8 +636,8 @@ aegaron.setOpacity = function(val)
 		<div class="mapcontainer-nav-left">
 			<div class="form-inline">
 				<div class="form-group">
-					<button class="btn btn-mini btn-inverse" onclick="map1.getView().setZoom(map1.getView().getZoom()+1)"><span class="glyphicon glyphicon-zoom-in"></button>
-					<button class="btn btn-mini btn-inverse" onclick="map1.getView().setZoom(map1.getView().getZoom()-1)"><span class="glyphicon glyphicon-zoom-out"></button>
+					<button class="btn btn-mini btn-info" onclick="map1.getView().setZoom(map1.getView().getZoom()+1)"><span class="glyphicon glyphicon-zoom-in"></button>
+					<button class="btn btn-mini btn-info" onclick="map1.getView().setZoom(map1.getView().getZoom()-1)"><span class="glyphicon glyphicon-zoom-out"></button>
 				</div>
 				<div class="form-group">
 					<select class="form-control" style="margin-bottom:0px;" onChange="aegaron.switchCompareMap('map1')" id="changecompare1">
@@ -511,8 +655,8 @@ aegaron.setOpacity = function(val)
 		<div class="mapcontainer-nav-left">
 			<div class="form-inline">
 				<div class="form-group">
-					<button class="btn btn-mini btn-inverse" onclick="map2.getView().setZoom(map2.getView().getZoom()+1)"><span class="glyphicon glyphicon-zoom-in"></span></button>
-					<button class="btn btn-mini btn-inverse" onclick="map2.getView().setZoom(map2.getView().getZoom()-1)"><span class="glyphicon glyphicon-zoom-out"></span></button>
+					<button class="btn btn-mini btn-info" onclick="map2.getView().setZoom(map2.getView().getZoom()+1)"><span class="glyphicon glyphicon-zoom-in"></span></button>
+					<button class="btn btn-mini btn-info" onclick="map2.getView().setZoom(map2.getView().getZoom()-1)"><span class="glyphicon glyphicon-zoom-out"></span></button>
 				</div>
 				<div class="form-group">
 					<select class="form-control" style="margin-bottom:0px;" onChange="aegaron.switchCompareMap('map2')" id="changecompare2">
@@ -529,8 +673,8 @@ aegaron.setOpacity = function(val)
 					</select>
 				</div>
 				<div class="form-group">
-					<button class="btn btn-mini btn-inverse" onclick="map3.getView().setZoom(map3.getView().getZoom()+1)"><span class="glyphicon glyphicon-zoom-in"></span></button>
-					<button class="btn btn-mini btn-inverse" onclick="map3.getView().setZoom(map3.getView().getZoom()-1)"><span class="glyphicon glyphicon-zoom-out"></span></button>
+					<button class="btn btn-mini btn-info" onclick="map3.getView().setZoom(map3.getView().getZoom()+1)"><span class="glyphicon glyphicon-zoom-in"></span></button>
+					<button class="btn btn-mini btn-info" onclick="map3.getView().setZoom(map3.getView().getZoom()-1)"><span class="glyphicon glyphicon-zoom-out"></span></button>
 				</div>
 			</div>
 		</div>
@@ -539,7 +683,7 @@ aegaron.setOpacity = function(val)
     	<div id="mapcontainer2-map2"><div id="map3"></div></div>
 	</div>
 
-	<!-- transparency slider -->
+	<!-- transparency slider
 	<div id='control-container'>
 		<div onclick="aegaron.setOpacity(.1)" class="btn btn-info btn-sm"><span class="glyphicon glyphicon-plus-sign"></span></div>
 		<div id='control'>
@@ -547,6 +691,25 @@ aegaron.setOpacity = function(val)
 		</div>
 		<div onclick="aegaron.setOpacity(-.1)" class="btn btn-info btn-sm"><span class="glyphicon glyphicon-minus-sign"></span></div>
 	</div>
+ -->
+
+	<div class="modal fade" id="loading">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h4 class="modal-title">Loading dual view...</h4>
+				</div>
+				<div class="modal-body">
+					<div class="progress">
+						<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+							<span class="sr-only">60% Complete</span>
+						</div>
+					</div>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
 
 </div>
 </body>
