@@ -13,7 +13,7 @@
 <script type="text/javascript">
 
 function init(){
-	$.getJSON('http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_nongeo?f=json',function(data){
+	$.getJSON('http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_plans?f=json',function(data){
 		console.log(data)
 		$.each(data.services,function(i,val){
 			console.log(val.name);

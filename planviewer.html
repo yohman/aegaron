@@ -20,7 +20,7 @@
 
 // namespace
 var aegaron = {};
-
+    
 // map options	
 var map,map1,map2,map3;
 var viewState;
@@ -34,7 +34,7 @@ var alllayers_map3 = []; // drop down array holder for all maps (map3)
 var layerlookup = [];
 
 // arcgis server url
-var arcgisserverurl = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_nongeo';
+var arcgisserverurl = 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_plans';
 
 // launch of document ready
 $( document ).ready(function() {
@@ -85,7 +85,7 @@ aegaron.getAllPlans = function()
 
 		$.each(data.services,function(i,item){
 			// just show the plan number
-			var displaystring = item.name.replace("aegaron_nongeo/","");
+			var displaystring = item.name.replace("aegaron_plans/","");
 			var splitname = item.name.split("/");
 
 			// add to the drop down choices for all 3 map divs

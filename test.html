@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.0.0/css/ol.css" type="text/css">
+    <style>
+      .map {
+        height: 800px;
+        width: 100%;
+      }
+    </style>
+    <script src="http://openlayers.org/en/v3.0.0/build/ol.js" type="text/javascript"></script>
+    <title>OpenLayers 3 example</title>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <script type="text/javascript">
+      // var map = new ol.Map({
+      //   target: 'map',
+      //   layers: [
+      //     new ol.layer.Tile({
+      //       source: new ol.source.MapQuest({layer: 'sat'})
+      //     })
+      //   ],
+      //   view: new ol.View({
+      //     center: ol.proj.transform([37.41, 8.82], 'EPSG:4326', 'EPSG:3857'),
+      //     zoom: 4
+      //   })
+      // });
+
+// get map extent with: map.getView().calculateExtent(map.getSize())
+var thisbbox = '3660201.989930164, 2756296.0006933045, 3661052.3518698364, 2756534.866406696'
+var thismapid = 11;
+
+var layer1 = new ol.layer.Image({
+    source: new ol.source.ImageMapGuide({
+      url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/batch1/ImageServer/exportImage?f=image&bbox='+thisbbox+'&imageSR=102100&bboxSR=102100&size=2848,800&mosaicRule={%22mosaicMethod%22:%22esriMosaicLockRaster%22,%22lockRasterIds%22:['+thismapid+']}'
+    })
+  })
+var layer2 = new ol.layer.Image({
+    source: new ol.source.ImageMapGuide({
+      url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/batch1/ImageServer/exportImage?f=image&bbox='+thisbbox+'&imageSR=102100&bboxSR=102100&size=2848,800&mosaicRule={%22mosaicMethod%22:%22esriMosaicLockRaster%22,%22lockRasterIds%22:[7]}'
+    })
+  })
+
+// var layer1 = new ol.layer.Image({
+//     source: new ol.source.ImageStatic({
+//     	imageExtent: [thisbbox],
+//     	imageSize:[1424,400],
+//       url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/batch1/ImageServer/exportImage?f=image&bbox=thisbbox&imageSR=102100&bboxSR=102100&size=1424,400&mosaicRule={%22mosaicMethod%22:%22esriMosaicLockRaster%22,%22lockRasterIds%22:['+thismapid+']}'
+//     })
+//   })
+
+// var layer1 = new ol.layer.Image({
+//     extent: [thisbbox],
+//     source: new ol.source.ImageWMS({
+//       url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/batch1/ImageServer/exportImage?f=image&bbox=thisbbox&imageSR=102100&bboxSR=102100&size=1424,400&mosaicRule={%22mosaicMethod%22:%22esriMosaicLockRaster%22,%22lockRasterIds%22:['+thismapid+']}',
+//       params: {'LAYERS': 'topp:states'},
+//       serverType: 'geoserver'
+//     })
+//   })
+
+// add to layer array for map 1
+var satlayers = new ol.layer.Tile({
+	mapid: 1,
+	source: new ol.source.XYZ({
+		url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/Philae/ImageServer/tile/{z}/{y}/{x}',
+		maxZoom: 23
+	}),
+	visible: true
+});
+
+
+var layers = [
+  satlayers,
+  layer1
+];
+
+var map = new ol.Map({
+  layers: layers,
+  target: 'map',
+  view: new ol.View({
+    center: [3660627.1709000003,2756415.43355],
+    zoom: 18
+  })
+});
+
+function onMoveEnd(evt) {
+	redrawLayer()
+}
+
+map.on('moveend', redrawLayer);
+
+function redrawLayer()
+{
+	console.log('moved...')
+	map.removeLayer(layer1);
+
+	var thisbbox = map.getView().calculateExtent(map.getSize());
+	// for some reason need to double the map size...
+	var thissize = [map.getSize()[0]*window.devicePixelRatio,map.getSize()[1]*window.devicePixelRatio];
+
+	layer1 = new ol.layer.Image({
+	    source: new ol.source.ImageMapGuide({
+	      url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/temp/batch1/ImageServer/exportImage?f=image&bbox='+thisbbox+'&imageSR=102100&bboxSR=102100&size='+thissize+'&mosaicRule={%22mosaicMethod%22:%22esriMosaicLockRaster%22,%22lockRasterIds%22:['+thismapid+']}'
+	    })
+	  })
+
+	map.addLayer(layer1);
+	layer1.setOpacity(0.8)
+}
+
+
+
+
+    </script>
+  </body>
+</html>
