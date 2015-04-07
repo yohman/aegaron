@@ -20,28 +20,28 @@
 // namespace and application settings
 var aegaron = 
 {
-	viewState: 			0, 		// 0 = single; 1 = dual
-	zoomLevel: 			19,
-	mapid1: 			'0012', // default mapid
-	mapid2: 			'', 	//empty by default 
-	mapCenter: 			[3660710.823399583, 2756502.4598684157], 
+	viewState: 		0, 		// 0 = single; 1 = dual
+	zoomLevel: 		19,
+	mapid1: 		'0012', // default mapid
+	mapid2: 		'', 	//empty by default 
+	mapCenter: 		[3660710.823399583, 2756502.4598684157], 
 	alllayers_map1: 	[], // drop down array holder for all maps (map1)
 	alllayers_map2: 	[],
 	alllayers_map3: 	[],
 	current_opacity: 	0.7,
-	syncmaps: 			true,
+	syncmaps: 		true,
 	mosaicData: 		'',
-	layer1: 			'',
+	layer1: 		'',
 	mapViewerHTMLFile: 	'mapviewer_marinus.html',
 	arcgisserverurl: 	'http://marinus.library.ucla.edu:6080/arcgis/rest/services/AEGARON/Georeferenced',
-	satlayers: 		 	new ol.layer.Tile({
-							mapid: 1,
-							source: new ol.source.XYZ({
-								url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/Philae/ImageServer/tile/{z}/{y}/{x}',
-								maxZoom: 23
-							}),
-							visible: true
-						})
+	satlayers: 		new ol.layer.Tile({
+					mapid: 1,
+					source: new ol.source.XYZ({
+						url: 'http://whippet.ats.ucla.edu/arcgis/rest/services/aegaron_satellite/Philae/ImageServer/tile/{z}/{y}/{x}',
+						maxZoom: 23
+					}),
+					visible: true
+				})
 };
 
 // map options	
@@ -65,9 +65,9 @@ $( document ).ready(function() {
 	aegaron.alllayers_map3.push(aegaron.satlayers);
 
 	// initialize the map
-    aegaron.getAllPlansFromMosaic();
+	aegaron.getAllPlansFromMosaic();
 
-    // add the transparency slider
+	// add the transparency slider
 	aegaron.transparencySlider();
 
 	// resize (maximize) the window
