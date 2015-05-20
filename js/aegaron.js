@@ -1,4 +1,8 @@
-// launch of document ready
+/******************************
+
+	launch of document ready
+
+*******************************/
 $( document ).ready(function() {
 
 	// set a default map id if not provided
@@ -21,12 +25,20 @@ $( document ).ready(function() {
 
 });
 
-//detect when window has been resized
+/****************************************
+
+	detect when window has been resized
+
+*****************************************/
 $( window ).resize(function() {
 	aegaron.resize();
 });
 
-//resize the map when window size changes
+/****************************************
+
+	resize the map when window size changes
+
+*****************************************/
 aegaron.resize = function()
 {
 	var height = $(window).height()-80;
@@ -43,7 +55,12 @@ aegaron.resize = function()
 	if(aegaron.map3){aegaron.map3.updateSize();};
 }
 
-// Call ArcServer and get all the layers from the Mosaic Database
+/****************************************
+
+	Call ArcServer and get all the 
+	layers from the Mosaic Database
+
+*****************************************/
 aegaron.getAllPlansFromMosaic = function()
 {
 	// url to arc server
@@ -115,12 +132,17 @@ aegaron.getAllPlansFromMosaic = function()
 	})
 }
 
+/****************************************
+
+	Populate drop down based
+
+*****************************************/
 var noplans = [];
 var prev = '';
 aegaron.getDrawingByPlanID = function(planID)
 {
 	// console.log('getting drawings...')
-	var drawing = $.grep(drawings, function(e){ return e.drawing == planID; });	
+	var drawing = $.grep(aegaron.drawings, function(e){ return e.drawing == planID; });	
 
 	if(drawing[0] === undefined)
 	{
@@ -128,9 +150,9 @@ aegaron.getDrawingByPlanID = function(planID)
 
 		if(planID !== prev)
 		{
-			console.log(planID)
 			noplans.push(planID)
 		}
+
 		prev = planID;
 		// console.log(planID)
 		return noPlan;
@@ -172,6 +194,12 @@ aegaron.getExtentByMapID = function(mapid)
 	}
 }
 
+/****************************************
+
+	For every map redraw, redraw each
+	layer accordingly
+
+*****************************************/
 // function to draw and redraw map(s) on request
 function redrawLayer(mapdivid)
 {
@@ -252,6 +280,12 @@ function redrawLayer(mapdivid)
 	}
 }
 
+/****************************************
+
+	Pad the bounding box to allow for
+	seamless rotation of plan overlays
+
+*****************************************/
 aegaron.getRotationSafeWindowSize = function(windowsize)
 {
 	x1 = 0;
@@ -295,6 +329,11 @@ aegaron.getRotationSafeImage = function(bbox)
 	return [newx1,newy1,newx2,newy2]
 }
 
+/****************************************
+
+	Satellite basemap selection function
+
+*****************************************/
 aegaron.getApolloSatelliteByCenterLatLng = function(center)
 {
 	// console.log('getting apollo by center...')
@@ -396,6 +435,11 @@ aegaron.getApolloSatelliteByCenterLatLng = function(center)
 	}
 }
 
+/****************************************
+
+	View mode functions
+
+*****************************************/
 // toggle view modes (single/dual)
 aegaron.dualView = function(view)
 {
@@ -446,6 +490,11 @@ aegaron.toggleSyncMaps = function()
 
 }
 
+/****************************************
+
+	Dynamic URL functions
+
+*****************************************/
 // get URL parameters
 aegaron.getUrlVar = function(key)
 {
@@ -460,7 +509,12 @@ aegaron.setUrlVars=function(evt)
 	history.pushState(null, "A new title!", urlvars);
 }
 
-// switch maps when new dropdown map chosen
+/****************************************
+
+	switch maps when new dropdown 
+	map chosen
+
+*****************************************/ 
 aegaron.switchCompareMap=function(map)
 {
 	console.log(map)
@@ -510,7 +564,11 @@ aegaron.switchCompareMap=function(map)
 	}
 }
 
+/****************************************
 
+	Transparency functions for overlay
+
+*****************************************/
 // transparency slider for overlay
 aegaron.transparencySlider = function()
 {
