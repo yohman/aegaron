@@ -137,29 +137,27 @@ aegaron.getAllPlansFromMosaic = function()
 	Populate drop down based
 
 *****************************************/
-var noplans = [];
-var prev = '';
 aegaron.getDrawingByPlanID = function(planID)
 {
-	// console.log('getting drawings...')
-	var drawing = $.grep(aegaron.drawings, function(e){ return e.drawing == planID; });	
+	// var drawing = $.grep(aegaron.drawings, function(e){ return e.drawing == planID; });	
+	var drawing;
 
-	if(drawing[0] === undefined)
-	{
-		var noPlan = {"drawing":planID,"place":"--","planTitle":"--"}
-
-		if(planID !== prev)
+	$.each(aegaron.drawings,function(i,val){
+		if(aegaron.drawings[i].drawing === planID)
 		{
-			noplans.push(planID)
+			console.log(aegaron.drawings[i])
+			drawing = aegaron.drawings[i];
 		}
+	})
 
-		prev = planID;
-		// console.log(planID)
-		return noPlan;
+	if(drawing)
+	{
+		return drawing;
 	}
 	else
 	{
-		return drawing[0];
+		var noPlan = {"drawing":planID,"place":"--","planTitle":"--"}
+		return noPlan;
 	}
 }
 
