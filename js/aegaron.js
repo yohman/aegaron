@@ -15,6 +15,9 @@ $( document ).ready(function() {
 	};
 
 	// initialize the map
+	aegaron.initializeMaps();
+
+	// get mosaic data
     aegaron.getAllPlansFromMosaic();
 
     // add the transparency slider
@@ -23,6 +26,10 @@ $( document ).ready(function() {
 	// resize (maximize) the window
 	aegaron.resize();
 
+	// enable geo toggle
+	$('#geo-toggle').change(function() {
+		aegaron.toggleGeo();
+	})
 });
 
 /****************************************
@@ -57,14 +64,75 @@ aegaron.resize = function()
 
 /****************************************
 
+	Initialize the 3 openlayer maps
+
+*****************************************/
+aegaron.initializeMaps = function()
+{
+	// create map1 (single view)
+	aegaron.map1 = new ol.Map({
+		target: 'map1',
+		// layers: aegaron.alllayers_map1,
+		view: new ol.View({
+			center: aegaron.mapCenter, 
+			zoom: aegaron.zoomLevel
+		})
+	});
+
+	// create map2 (left map for dual view)
+	aegaron.map2 = new ol.Map({
+		target: 'map2',
+		// layers: aegaron.alllayers_map2,
+		view: new ol.View({
+			center: aegaron.map1.getView().getCenter(),
+			zoom: aegaron.zoomLevel
+		})
+	});
+
+	// create map3 (right map for dual view)
+	aegaron.map3 = new ol.Map({
+		target: 'map3',
+		// layers: aegaron.alllayers_map3,
+		view: new ol.View({
+			center: aegaron.mapCenter, 
+			zoom: aegaron.zoomLevel
+		})
+	});
+
+	// bind/sync the maps in dual view
+	aegaron.map2.bindTo('layergroup',aegaron.map1);
+	aegaron.map2.bindTo('view',aegaron.map1);
+	aegaron.map3.bindTo('view',aegaron.map2);
+
+	// ask for image to be redrawn every time map view changes
+	// aegaron.map1.on('moveend', function(){aegaron.redrawOnMoveend()});
+	aegaron.map2.on('moveend', function(){aegaron.redrawOnMoveend()});
+	aegaron.map3.on('moveend', function(){aegaron.redrawOnMoveend()});
+
+}
+
+/****************************************
+
 	Call ArcServer and get all the 
 	layers from the Mosaic Database
 
 *****************************************/
 aegaron.getAllPlansFromMosaic = function()
 {
-	// url to arc server
-	var url = aegaron.arcgisserverurl+'/ImageServer/query?where=1=1&outFields=*&orderByFields=Name&returnGeometry=true&outSR=102100&f=pjson';
+	$("#changecompare1").empty();
+	$("#changecompare2").empty();
+	$("#changecompare3").empty();
+
+	if(aegaron.geo)
+	{
+		// url to arc server
+		var url = aegaron.arcgisserver_rest_url+'/ImageServer/query?where=1=1&outFields=*&orderByFields=Name&returnGeometry=true&outSR=102100&f=pjson';
+	}
+	else
+	{
+		// url to arc server
+		var url = aegaron.arcgisserver_nongeo_rest_url+'/ImageServer/query?where=1=1&outFields=*&orderByFields=Name&returnGeometry=true&outSR=102100&f=pjson';		
+	}
 
 	// ajax call
 	$.getJSON(url,function(data){
@@ -72,7 +140,6 @@ aegaron.getAllPlansFromMosaic = function()
 
 		// loop through each mosaic
 		$.each(data.features,function(i,item){
-
 			// name is the Plan ID (eg: 0001, 0012, etc)
 			var name = item.attributes.Name;
 			var text = aegaron.getDrawingByPlanID(name).place + ': ' + aegaron.getDrawingByPlanID(name).planTitle + ' (' + aegaron.getDrawingByPlanID(name).drawing + ')';
@@ -83,60 +150,22 @@ aegaron.getAllPlansFromMosaic = function()
 			$("#changecompare3").append('<option value='+name+'>'+text+'</option>');
 		});
 
-		// create map1 (single view)
-		aegaron.map1 = new ol.Map({
-			target: 'map1',
-			// layers: aegaron.alllayers_map1,
-			view: new ol.View({
-				center: aegaron.mapCenter, 
-				zoom: aegaron.zoomLevel
-			})
-		});
-
-		// create map2 (left map for dual view)
-		aegaron.map2 = new ol.Map({
-			target: 'map2',
-			layers: aegaron.alllayers_map2,
-			view: new ol.View({
-				center: aegaron.map1.getView().getCenter(),
-				zoom: aegaron.zoomLevel
-			})
-		});
-
-		// create map3 (right map for dual view)
-		aegaron.map3 = new ol.Map({
-			target: 'map3',
-			layers: aegaron.alllayers_map3,
-			view: new ol.View({
-				center: aegaron.mapCenter, 
-				zoom: aegaron.zoomLevel
-			})
-		});
-
-		// bind/sync the maps in dual view
-		aegaron.map2.bindTo('layergroup',aegaron.map1);
-		aegaron.map2.bindTo('view',aegaron.map1);
-		aegaron.map3.bindTo('view',aegaron.map2);
-
 		// set the drop down values
 		$('#changecompare1').val(aegaron.mapid1);
 		$('#changecompare2').val(aegaron.mapid1);
 		$('#changecompare3').val(aegaron.mapid2);
 
+		// initiate the default map
 		aegaron.switchCompareMap(aegaron.map1);
-
-		// ask for image to be redrawn every time map view changes
-		// aegaron.map1.on('moveend', function(){aegaron.redrawOnMoveend()});
-		aegaron.map2.on('moveend', function(){aegaron.redrawOnMoveend()});
-		aegaron.map3.on('moveend', function(){aegaron.redrawOnMoveend()});
 	})
 }
 
 /****************************************
 
-	Populate drop down based
+	Populate drop downs
 
 *****************************************/
+
 aegaron.getDrawingByPlanID = function(planID)
 {
 	// var drawing = $.grep(aegaron.drawings, function(e){ return e.drawing == planID; });	
@@ -145,7 +174,6 @@ aegaron.getDrawingByPlanID = function(planID)
 	$.each(aegaron.drawings,function(i,val){
 		if(aegaron.drawings[i].drawing === planID)
 		{
-			console.log(aegaron.drawings[i])
 			drawing = aegaron.drawings[i];
 		}
 	})
@@ -248,12 +276,21 @@ function redrawLayer(mapdivid)
 
 	if(objectID!==undefined)
 	{
+		// geo or nongeo?
+		if(aegaron.geo)
+		{
+			var url = aegaron.arcgisserver_wms_url;
+		}
+		else
+		{
+			var url = aegaron.arcgisserver_nongeo_wms_url;
+		}
 		// create the plan overlay from the WMS map service
 		aegaron.layer1 = new ol.layer.Image({
 			extent: aegaron.getRotationSafeImage(thisbbox),
 			source: new ol.source.ImageWMS({
 				
-				url: 'http://marinus.library.ucla.edu:6080/arcgis/services/AEGARON/Aegaron_Georeference_3/ImageServer/WMSServer',
+				url: url,
 				params: {
 							'LAYERS': 0,
 							'images': objectID
@@ -334,7 +371,6 @@ aegaron.getRotationSafeImage = function(bbox)
 *****************************************/
 aegaron.getApolloSatelliteByCenterLatLng = function(center)
 {
-	// console.log('getting apollo by center...')
 	if(	center[0]>aegaron.apollo.philae.extent.xmin && 
 		center[0]<aegaron.apollo.philae.extent.xmax && 
 		center[1]>aegaron.apollo.philae.extent.ymin && 
@@ -438,6 +474,19 @@ aegaron.getApolloSatelliteByCenterLatLng = function(center)
 	View mode functions
 
 *****************************************/
+aegaron.toggleGeo = function()
+{
+	if(aegaron.geo)
+	{
+		aegaron.geo = false;
+	}
+	else
+	{
+		aegaron.geo = true;
+	}
+	aegaron.getAllPlansFromMosaic();
+}
+
 // toggle view modes (single/dual)
 aegaron.dualView = function(view)
 {
@@ -515,11 +564,8 @@ aegaron.setUrlVars=function(evt)
 *****************************************/ 
 aegaron.switchCompareMap=function(map)
 {
-	console.log(map)
 	if(map === aegaron.map1)
 	{
-		console.log('switching map1')
-
 		var compareID = $('#changecompare1').val();
 		aegaron.mapid1 = compareID;
 		aegaron.setUrlVars();
@@ -535,7 +581,6 @@ aegaron.switchCompareMap=function(map)
 	}
 	else if (map === aegaron.map2)
 	{
-		console.log('switching map2')
 		var compareID = $('#changecompare2').val();
 		aegaron.mapid1 = compareID;
 		aegaron.setUrlVars();
@@ -550,7 +595,6 @@ aegaron.switchCompareMap=function(map)
 	}
 	else if (map === aegaron.map3)
 	{
-		console.log('switching map3')
 		var compareID = $('#changecompare3').val();
 		aegaron.mapid2 = compareID;
 		aegaron.setUrlVars();
