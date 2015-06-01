@@ -142,8 +142,9 @@ aegaron.getAllPlansFromMosaic = function()
 		$.each(data.features,function(i,item){
 			// name is the Plan ID (eg: 0001, 0012, etc)
 			var name = item.attributes.Name;
-			var text = aegaron.getDrawingByPlanID(name).place + ': ' + aegaron.getDrawingByPlanID(name).planTitle + ' (' + aegaron.getDrawingByPlanID(name).drawing + ')';
+			var text = aegaron.getDrawingByPlanID(name).place + ': ' + aegaron.getDrawingByPlanID(name).planTitle + ' (' + aegaron.getDrawingByPlanID(name).drawing + '-' + aegaron.getDrawingByPlanID(name).view+')';
 
+			// if(aegaron.getDrawingByPlanID(name).view !== 'plan')
 			// add to the drop down choices for all 3 map divs
 			$("#changecompare1").append('<option value='+name+'>'+text+'</option>');
 			$("#changecompare2").append('<option value='+name+'>'+text+'</option>');
@@ -364,6 +365,27 @@ aegaron.getRotationSafeImage = function(bbox)
 	return [newx1,newy1,newx2,newy2]
 }
 
+aegaron.setRotation = function(direction)
+{
+	if(direction === 'left')
+	{
+		aegaron.rotation = aegaron.rotation-5;
+		aegaron.rotation_radians = aegaron.rotation*(Math.PI/180)
+		aegaron.map1.getView().setRotation(aegaron.rotation_radians);
+	}
+	else if (direction === 'right')
+	{
+		aegaron.rotation = aegaron.rotation+5;
+		aegaron.rotation_radians = aegaron.rotation*(Math.PI/180)
+		aegaron.map1.getView().setRotation(aegaron.rotation_radians);
+	}
+	else
+	{
+		aegaron.rotation = 0;
+		aegaron.map1.getView().setRotation(aegaron.rotation);
+	}
+}
+
 /****************************************
 
 	Satellite basemap selection function
@@ -479,10 +501,14 @@ aegaron.toggleGeo = function()
 	if(aegaron.geo)
 	{
 		aegaron.geo = false;
+		$('#geo-yes').removeClass('disabled');
+		$('#geo-no').addClass('disabled');
 	}
 	else
 	{
 		aegaron.geo = true;
+		$('#geo-no').removeClass('disabled');
+		$('#geo-yes').addClass('disabled');
 	}
 	aegaron.getAllPlansFromMosaic();
 }
@@ -622,7 +648,7 @@ aegaron.transparencySlider = function()
 
 		if (!start) return;
 		// Adjust control
-		handle.style.left = Math.max(0, Math.min(190, startLeft + parseInt(e.clientX, 10) - start)) + 40 + 'px';
+		handle.style.left = Math.max(16, Math.min(206, startLeft + parseInt(e.clientX, 10) - start)) + 40 + 'px';
 		// Adjust opacity
 		var opacity = 1 - ((handle.offsetLeft-40) / 190);
 
@@ -659,7 +685,7 @@ aegaron.setOpacity = function(val)
 
 	aegaron.current_opacity = this_opacity;
 	// set the slider postion too
-	var handleposition = 190-(this_opacity*190)+40+'px';
+	var handleposition = 206-(this_opacity*190)+40+'px';
 
 	handle2.style.left=handleposition;
 

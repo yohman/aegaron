@@ -10,6 +10,7 @@ var aegaron =
 	mapCenter: 			[3660710.823399583, 2756502.4598684157], 
 	current_opacity: 	1,	// 0 is fully transparent
 	syncmaps: 			true,
+	rotation: 			0,
 	mosaicData: 		'',
 	mosaicData_nongeo: 		'',
 	layer1: 			'',
