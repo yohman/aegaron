@@ -142,7 +142,8 @@ aegaron.getAllPlansFromMosaic = function()
 		$.each(data.features,function(i,item){
 			// name is the Plan ID (eg: 0001, 0012, etc)
 			var name = item.attributes.Name;
-			var text = aegaron.getDrawingByPlanID(name).place + ': ' + aegaron.getDrawingByPlanID(name).planTitle + ' (' + aegaron.getDrawingByPlanID(name).drawing + '-' + aegaron.getDrawingByPlanID(name).view+')';
+			// var text = aegaron.getDrawingByPlanID(name).place + ': ' + aegaron.getDrawingByPlanID(name).planTitle + ' (' + aegaron.getDrawingByPlanID(name).drawing + '-' + aegaron.getDrawingByPlanID(name).view+')';
+			var text = aegaron.getDrawingByPlanID(name).place + ': ' + aegaron.getDrawingByPlanID(name).planTitle + ' (' + aegaron.getDrawingByPlanID(name).drawing+')';
 
 			// if(aegaron.getDrawingByPlanID(name).view !== 'plan')
 			// add to the drop down choices for all 3 map divs
@@ -677,7 +678,7 @@ aegaron.setOpacityFromSliderButtons = function(val)
 	aegaron.setOpacity(this_opacity);	
 }
 
-aegaron.setOpacity = function(val)
+aegaron.setOpacity = function(val) 
 {
 	var this_opacity = val;
 	if(this_opacity>=1){ this_opacity = 1};
