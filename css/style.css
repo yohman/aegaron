@@ -1,3 +1,6 @@
+a:hover {
+    text-decoration: none;
+}
 #master-map-container{
 	position: relative;
 	padding: 10px;
@@ -113,7 +116,7 @@
 	*/		
 	z-index:10;
 	height:34px;
-	width:200px;
+	width:150px;
 	border:1px solid #BBB;
 	/*-webkit-border-radius:3px;
 	border-radius:3px;*/
