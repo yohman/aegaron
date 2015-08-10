@@ -138,10 +138,6 @@ aegaron.getAllPlansFromMosaic = function()
 	// clear elements
 	aegaron.planIDforDDindexLookup.length = 0;
 
-	$("#changecompare1").msDropdown().data("dd").destroy()
-	$("#changecompare2").msDropdown().data("dd").destroy()
-	$("#changecompare3").msDropdown().data("dd").destroy()
-
 	$("#changecompare1").empty();
 	$("#changecompare2").empty();
 	$("#changecompare3").empty();
@@ -166,8 +162,7 @@ aegaron.getAllPlansFromMosaic = function()
 			// name is the Plan ID (eg: 0001, 0012, etc)
 			var name = item.attributes.Name;
 			aegaron.planIDforDDindexLookup.push(name);
-			var title = aegaron.getDrawingByPlanID(name).place + ' ' + name;
-			var thumb = aegaron.getDrawingByPlanID(name).thumbnailUrl;
+			var title = aegaron.getDrawingByPlanID(name).place;
 			var text = aegaron.getDrawingByPlanID(name).drawing+ ' ' +aegaron.getDrawingByPlanID(name).planTitle+ '<br>' + aegaron.getDrawingByPlanID(name).state;
 			var OBJECTID = item.attributes.OBJECTID;
 
@@ -177,76 +172,81 @@ aegaron.getAllPlansFromMosaic = function()
 			if(name == aegaron.mapid2){map3selected = 'selected'}
 
 			// add to the drop down choices for all 3 map divs
-			$("#changecompare1").append('<option '+map1selected+' value='+name+' data-imagecss="dd-image" data-image="http://digital2.library.ucla.edu/dlcontent/aegaron/nails/'+name+'.jpg" data-description="'+text+'">'+title+'</option>');
-			$("#changecompare2").append('<option '+map1selected+' value='+name+' data-imagecss="dd-image" data-image="http://digital2.library.ucla.edu/dlcontent/aegaron/nails/'+name+'.jpg" data-description="'+text+'">'+title+'</option>');
-			$("#changecompare3").append('<option '+map3selected+' value='+name+' data-imagecss="dd-image" data-image="http://digital2.library.ucla.edu/dlcontent/aegaron/nails/'+name+'.jpg" data-description="'+text+'">'+title+'</option>');
+			$("#changecompare1").append('<option '+map1selected+' value='+name+' data-imagesrc="http://digital2.library.ucla.edu/dlcontent/aegaron/nails/'+name+'.jpg" data-description="'+text+'">'+title+'</option>');
+			$("#changecompare2").append('<option '+map1selected+' value='+name+' data-imagesrc="http://digital2.library.ucla.edu/dlcontent/aegaron/nails/'+name+'.jpg" data-description="'+text+'">'+title+'</option>');
+			$("#changecompare3").append('<option '+map3selected+' value='+name+' data-imagesrc="http://digital2.library.ucla.edu/dlcontent/aegaron/nails/'+name+'.jpg" data-description="'+text+'">'+title+'</option>');
 
 		});
-		
-		// Sort dropdowns alphabetically
-		aegaron.sortDropdown("#changecompare1");
-		aegaron.sortDropdown("#changecompare2");
-		aegaron.sortDropdown("#changecompare3");
 
-		// Add images to the dropdown	
+		// make them slick		
 		if(aegaron.viewState == 0)
 		{
-			$("#changecompare1").msDropdown({visibleRows:6});
-			$('#changecompare1').on('change', function() {
-				aegaron.switchCompareMapDD(aegaron.map1,this.value);
+			$('#changecompare1').ddslick('destroy');
+			ddslick1 = $('#changecompare1').ddslick({
+				// imagePosition:"right",
+				height: "200px",
+				onSelected: function(data){
+					aegaron.switchCompareMapDD(aegaron.map1,data);
+				}
 			});
 
-			$('#changecompare1').val(aegaron.mapid1).trigger('change')
-			
-			// $('#changecompare1').hover(
-			// 	function(){
-			// 		$(this).css('opacity',1)
-			// 	},
-			// 	function(){
-			// 		$(this).css('opacity',0.5)
-			// 	}
-			// )
+			$('#changecompare1').hover(
+				function(){
+					$(this).css('opacity',1)
+				},
+				function(){
+					$(this).css('opacity',0.5)
+				}
+			)
 		}
 		else
 		{
-			$("#changecompare2").msDropdown({visibleRows:4});
-			$('#changecompare2').on('change', function() {
-				aegaron.switchCompareMapDD(aegaron.map2,this.value);
+			$('#changecompare2').ddslick('destroy');
+			$('#changecompare3').ddslick('destroy');
+			ddslick2 = $('#changecompare2').ddslick({
+				// imagePosition:"right",
+				height: "200px",
+				onSelected: function(data){
+					aegaron.switchCompareMapDD(aegaron.map2,data);
+				}
 			});
 
-			$("#changecompare3").msDropdown({visibleRows:4});
-			$('#changecompare3').on('change', function() {
-				aegaron.switchCompareMapDD(aegaron.map3,this.value);
+			ddslick3 = $('#changecompare3').ddslick({
+				height: "200px",
+				onSelected: function(data){
+					aegaron.switchCompareMapDD(aegaron.map3,data);
+				}
 			});
 		}
 
 		aegaron.resize();
-		// add alt tags to the image
-		$(".dd-image").attr('alt','')
 	})
 }
 
 /****************************************
 
-	Sort drop downs
+	Populate drop downs
 
 *****************************************/
 aegaron.sortDropdown = function(selectID)
 {
-	var sel = $(selectID);
-	var opts_list = sel.find('option');
-	opts_list.sort(function(a, b) { return $(a).text().toLowerCase() > $(b).text().toLowerCase() ? 1 : -1; });
-	sel.html('').append(opts_list);
+	// sort the drop downs alphabetically
+	var options = $(selectID + ' option');
+	var arr = options.map(function(_, o) {
+		return {
+			t: $(o).text(),
+			v: o.value
+		};
+	}).get();
+	arr.sort(function(o1, o2) {
+		return o1.t > o2.t ? 1 : o1.t < o2.t ? -1 : 0;
+	});
+	options.each(function(i, o) {
+		o.value = arr[i].v;
+		$(o).text(arr[i].t);
+	});
+
 }
-
-/****************************************
-
-	Match drawing plans from DL with 
-	what we have in ArcGIS Server
-		*If no match is found
-		 Display as "--"
-
-*****************************************/
 aegaron.getDrawingByPlanID = function(planID)
 {
 	// var drawing = $.grep(aegaron.drawings, function(e){ return e.drawing == planID; });	
@@ -329,6 +329,7 @@ function redrawLayer(mapdivid)
 	// remove any existing overlays
 	if(mapdivid.getLayers().getArray().length > 1)
 	{
+		// todo: redo this to loop through array count!!
 		$.each(mapdivid.getLayers().getArray(),function(i,val){
 			mapdivid.removeLayer(mapdivid.getLayers().getArray()[0]);
 		})
@@ -348,6 +349,7 @@ function redrawLayer(mapdivid)
 		var objectID = aegaron.mapid2objectid(aegaron.mapid1);
 		// 8 or 16 bit?
 		var PlanIDasNum = Number(aegaron.mapid1);
+
 	}
 	else
 	{
@@ -363,11 +365,22 @@ function redrawLayer(mapdivid)
 		if(aegaron.geo)
 		{
 			var url = aegaron.arcgisserver_wms_url;
+			// if(PlanIDasNum > 370)
+			// {
+			// 	var url = aegaron.arcgisserver_wms_url_16bit;
+			// }
+			// else
+			// {
+			// 	var url = aegaron.arcgisserver_wms_url;
+			// }
 		}
 		else
 		{
 			var url = aegaron.arcgisserver_nongeo_wms_url;
 		}
+
+		// 8 or 16 bit?
+		// if(info)
 
 		// create the plan overlay from the WMS map service
 		aegaron.layer1 = new ol.layer.Image({
@@ -504,7 +517,6 @@ aegaron.toggleGeo = function()
 {
 	if(aegaron.geo)
 	{
-		console.log('switching to no satellite')
 		aegaron.geo = false;
 		$('#view-mode-nosatellite').addClass('disabled');
 		$('#view-mode-satellite').removeClass('disabled');
@@ -512,7 +524,6 @@ aegaron.toggleGeo = function()
 	}
 	else
 	{
-		console.log('switching to satellite')
 		aegaron.geo = true;
 		$('#view-mode-satellite').addClass('disabled');
 		$('#view-mode-nosatellite').removeClass('disabled');
@@ -524,15 +535,20 @@ aegaron.toggleGeo = function()
 // toggle view modes (single/dual)
 aegaron.toggleLayout = function(view)
 {
-	console.log('toggling')
 	if (view == 0) //single map
 	{
 		$('#mapcontainer2').hide();
 		$('#mapcontainer1').show();
 		$('#sync-nav').hide();
-		
-		// update the map to mirror map2
-		$('#changecompare1').val(aegaron.mapid1).trigger('change')
+
+		$('#changecompare1').ddslick('destroy');
+
+		ddslick1 = $('#changecompare1').ddslick({
+			height: "200px",
+			onSelected: function(data){
+				aegaron.switchCompareMapDD(aegaron.map1,data);
+			}
+		});
 
 		$('#layout-mode-single').addClass('disabled');
 		$('#layout-mode-dual').removeClass('disabled');
@@ -545,22 +561,27 @@ aegaron.toggleLayout = function(view)
 	}
 	else if (view == 1) //synced dual map
 	{
-		// update the map to mirror map2
-		$('#changecompare2').val(aegaron.mapid1).trigger('change')
-
 		$('#mapcontainer1').hide();
 		$('#mapcontainer2').show();
 		$('#changecompare2').val(aegaron.mapid1);
 
+		$('#changecompare2').ddslick('destroy');
 
-		$("#changecompare2").msDropdown({visibleRows:4});
-		$('#changecompare2').on('change', function() {
-			aegaron.switchCompareMapDD(aegaron.map2,this.value);
+		ddslick2 = $('#changecompare2').ddslick({
+			height: "200px",
+			onSelected: function(data){
+				aegaron.switchCompareMapDD(aegaron.map2,data);
+			}
 		});
 
-		$("#changecompare3").msDropdown({visibleRows:4});
-		$('#changecompare3').on('change', function() {
-			aegaron.switchCompareMapDD(aegaron.map3,this.value);
+		$('#changecompare3').ddslick('destroy');
+
+		ddslick3 = $('#changecompare3').ddslick({
+			// imagePosition:"right",
+			height: "200px",
+			onSelected: function(data){
+				aegaron.switchCompareMapDD(aegaron.map3,data);
+			}
 		});
 
 		$('#layout-mode-single').removeClass('disabled');
@@ -575,12 +596,29 @@ aegaron.toggleLayout = function(view)
 	}
 	else if (view == 2) //unsynced dual map
 	{
-		// update the map to mirror map2
-		$('#changecompare2').val(aegaron.mapid1).trigger('change')
-
 		$('#mapcontainer1').hide();
 		$('#mapcontainer2').show();
 		$('#changecompare2').val(aegaron.mapid1);
+
+		$('#changecompare2').ddslick('destroy');
+
+		ddslick2 = $('#changecompare2').ddslick({
+			// imagePosition:"right",
+			height: "200px",
+			onSelected: function(data){
+				aegaron.switchCompareMapDD(aegaron.map2,data);
+			}
+		});
+
+		$('#changecompare3').ddslick('destroy');
+
+		ddslick3 = $('#changecompare3').ddslick({
+			// imagePosition:"right",
+			height: "200px",
+			onSelected: function(data){
+				aegaron.switchCompareMapDD(aegaron.map3,data);
+			}
+		});
 		
 		$('#layout-mode-dual').removeClass('disabled');
 		$('#layout-mode-single').removeClass('disabled');
@@ -592,8 +630,6 @@ aegaron.toggleLayout = function(view)
 		aegaron.viewState = 2;
 		aegaron.toggleSyncMaps(0);
 	}
-	// add alt tags to the image
-	$(".dd-image").attr('alt','')
 }
 
 // toggle syncing of dual maps
@@ -660,7 +696,7 @@ aegaron.switchCompareMapDD=function(map,data)
 {
 	if(map === aegaron.map1)
 	{
-		var compareID = data;
+		var compareID = data.selectedData.value;
 		aegaron.mapid1 = compareID;
 		aegaron.setUrlVars();
 
@@ -670,8 +706,7 @@ aegaron.switchCompareMapDD=function(map,data)
 		// only if dual view
 		if(aegaron.viewState == 0)
 		{
-			// if(ddslick2){ $('#changecompare2').ddslick('select', {index: index }); }
-			// $('#changecompare2').val(index).trigger('change')
+			if(ddslick2){ $('#changecompare2').ddslick('select', {index: index }); }
 			var thisExtent = aegaron.getExtentByMapID(aegaron.mapid1);
 			aegaron.map1.getView().fitExtent(thisExtent,aegaron.map1.getSize());
 
@@ -680,7 +715,7 @@ aegaron.switchCompareMapDD=function(map,data)
 	}
 	else if (map === aegaron.map2)
 	{
-		var compareID = data;
+		var compareID = data.selectedData.value;
 		aegaron.mapid1 = compareID;
 		aegaron.setUrlVars();
 
@@ -690,8 +725,7 @@ aegaron.switchCompareMapDD=function(map,data)
 		// only if dual view
 		if(aegaron.viewState >= 1)
 		{
-			// if(ddslick1){ $('#changecompare1').ddslick('select', {index: index }); }
-			// $('#changecompare1').val(index).trigger('change')
+			if(ddslick1){ $('#changecompare1').ddslick('select', {index: index }); }
 			var thisExtent = aegaron.getExtentByMapID(aegaron.mapid1);
 			aegaron.map1.getView().fitExtent(thisExtent,aegaron.map1.getSize());
 			aegaron.map2.getView().fitExtent(thisExtent,aegaron.map2.getSize());
@@ -701,7 +735,7 @@ aegaron.switchCompareMapDD=function(map,data)
 	}
 	else if (map === aegaron.map3)
 	{
-		var compareID = data;
+		var compareID = data.selectedData.value;
 		aegaron.mapid2 = compareID;
 
 		// // zoom to extent of new map
