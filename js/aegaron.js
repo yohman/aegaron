@@ -146,6 +146,16 @@ aegaron.getAllPlansFromMosaic = function()
 	$("#changecompare2").empty();
 	$("#changecompare3").empty();
 
+	// if this is a section, toggle to nongeo viewer
+	var view = aegaron.getDrawingByPlanID(aegaron.mapid1).view;
+	if(view.search('section')>-1||view.search('elevation')>-1)
+	{
+		if(aegaron.geo)
+		{
+			aegaron.toggleGeo();
+		}
+	}
+
 	// get the appropriate mosaic dataset -- geo vs nongeo
 	if(aegaron.geo)
 	{
