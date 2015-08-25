@@ -147,8 +147,9 @@ aegaron.getAllPlansFromMosaic = function()
 	$("#changecompare3").empty();
 
 	// if this is a section, toggle to nongeo viewer
-	var view = aegaron.getDrawingByPlanID(aegaron.mapid1).view;
-	if(view.search('section')>-1||view.search('elevation')>-1)
+
+	var thisview = aegaron.getDrawingByPlanID(aegaron.mapid1).view.toLowerCase();
+	if(thisview.search('section')>-1||thisview.search('elevation')>-1||thisview.search('detail')>-1)
 	{
 		if(aegaron.geo)
 		{
@@ -765,4 +766,39 @@ aegaron.setOpacity = function(val)
 		aegaron.map2.getLayers().getArray()[1].setOpacity(this_opacity)
 	if(aegaron.map3.getLayers().getArray().length>0)
 		aegaron.map3.getLayers().getArray()[1].setOpacity(this_opacity)
+}
+
+aegaron.compareArc2DLCSFeed = function()
+{
+	var drawingsarray = [];
+	var counter = 1;
+	$.each(aegaron.drawings,function(i,val){
+		// console.log(val.drawing)
+
+
+
+
+		drawingsarray.push(val.drawing)
+		if($.inArray(val.drawing,aegaron.planIDforDDindexLookup)==-1)
+		{
+			// are you a section?
+			var thisview = aegaron.getDrawingByPlanID(val.drawing).view.toLowerCase();
+			if(thisview.search('section')>-1||thisview.search('elevation')>-1||thisview.search('detail')>-1)
+			{
+				// console.log(counter+'. '+val.drawing + ' exists in DLCS but not in arc SECTION')
+			}
+			else
+			{
+				console.log(counter+'. '+val.drawing + ' exists in DLCS but not in arc (' + thisview + ')')
+				counter++;
+			}
+		}
+	})
+	$.each(aegaron.planIDforDDindexLookup,function(i,val){
+		// console.log(val.drawing)
+		if($.inArray(val,drawingsarray)==-1)
+		{
+			console.log('<span style="color:red">'+val + ' exists in ARC but not in DLCS</span>')
+		}
+	})
 }
