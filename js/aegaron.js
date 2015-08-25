@@ -32,6 +32,16 @@ $( document ).ready(function() {
 		setTimeout(function(){aegaron.toggleLayout(1);$('#loading').modal('hide');},1500);
 	};
 
+	// if this is a section, toggle to nongeo viewer
+	var thisview = aegaron.getDrawingByPlanID(aegaron.mapid1).view.toLowerCase();
+	if(thisview.search('section')>-1||thisview.search('elevation')>-1||thisview.search('detail')>-1)
+	{
+		if(aegaron.geo)
+		{
+			aegaron.toggleGeo();
+		}
+	}
+
 	// initialize the map
 	aegaron.initializeMaps();
 
@@ -146,16 +156,6 @@ aegaron.getAllPlansFromMosaic = function()
 	$("#changecompare2").empty();
 	$("#changecompare3").empty();
 
-	// if this is a section, toggle to nongeo viewer
-
-	var thisview = aegaron.getDrawingByPlanID(aegaron.mapid1).view.toLowerCase();
-	if(thisview.search('section')>-1||thisview.search('elevation')>-1||thisview.search('detail')>-1)
-	{
-		if(aegaron.geo)
-		{
-			aegaron.toggleGeo();
-		}
-	}
 
 	// get the appropriate mosaic dataset -- geo vs nongeo
 	if(aegaron.geo)
@@ -798,7 +798,7 @@ aegaron.compareArc2DLCSFeed = function()
 		// console.log(val.drawing)
 		if($.inArray(val,drawingsarray)==-1)
 		{
-			console.log('<span style="color:red">'+val + ' exists in ARC but not in DLCS</span>')
+			console.log(val + ' exists in ARC but not in DLCS')
 		}
 	})
 }
