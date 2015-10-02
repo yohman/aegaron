@@ -183,12 +183,9 @@ aegaron.getAllPlansFromMosaic = function()
 		$("#changecompare2").append('<option selected value="--" data-imagecss="dd-image" data-image="" data-description="If you are in synced layout mode, choose a plan that is in the same location.">Select a plan to compare</option>');
 		$("#changecompare3").append('<option selected value="--" data-imagecss="dd-image" data-image="" data-description="If you are in synced layout mode, choose a plan that is in the same location.">Select a plan to compare</option>');
 
-			console.log(data.features)
-
 		var index = 0;
 		$.each(data.features,function(i,item){
-			console.log('in loop...' + i)
-			console.log(item)
+
 			// name is the Plan ID (eg: 0001, 0012, etc)
 			var name = item.attributes.Name;
 			aegaron.planIDforDDindexLookup.push(name);
@@ -208,13 +205,10 @@ aegaron.getAllPlansFromMosaic = function()
 			}
 
 
-			console.log('here')
-
 			// add to the drop down choices for all 3 map divs
 			$("#changecompare1").append('<option '+map1selected+' value='+name+' data-imagecss="dd-image" data-image="'+thumb+'" data-description="'+text+'">'+title+'</option>');
 			$("#changecompare2").append('<option '+map1selected+' value='+name+' data-imagecss="dd-image" data-image="'+thumb+'" data-description="'+text+'">'+title+'</option>');
 			$("#changecompare3").append('<option '+map3selected+' value='+name+' data-imagecss="dd-image" data-image="'+thumb+'" data-description="'+text+'">'+title+'</option>');
-			console.log(name + '::' + map3selected)
 
 		});
 		 
@@ -807,10 +801,6 @@ aegaron.compareArc2DLCSFeed = function()
 	var drawingsarray = [];
 	var counter = 1;
 	$.each(aegaron.drawings,function(i,val){
-		// console.log(val.drawing)
-
-
-
 
 		drawingsarray.push(val.drawing)
 		if($.inArray(val.drawing,aegaron.planIDforDDindexLookup)==-1)
