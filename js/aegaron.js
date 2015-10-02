@@ -155,15 +155,19 @@ aegaron.getAllPlansFromMosaic = function()
 	$("#changecompare1").empty();
 	$("#changecompare2").empty();
 	$("#changecompare3").empty();
-
+ 
 
 	// get the appropriate mosaic dataset -- geo vs nongeo
 	if(aegaron.geo)
 	{
+		console.log('getting geo plans from marinus...')
+		var pretitle = 'geo '
 		var url = aegaron.arcgisserver_rest_url+'/ImageServer/query?where=1=1&outFields=*&orderByFields=Name&returnGeometry=true&outSR=102100&f=pjson';
 	}
 	else
 	{
+		console.log('getting nongeo plans from marinus...')
+		var pretitle = 'nongeo '
 		var url = aegaron.arcgisserver_nongeo_rest_url+'/ImageServer/query?where=1=1&outFields=*&orderByFields=Name&returnGeometry=true&outSR=102100&f=pjson';	
 	}
 
@@ -171,9 +175,20 @@ aegaron.getAllPlansFromMosaic = function()
 	$.getJSON(url,function(data){
 		aegaron.mosaicData = data.features;
 
+		console.log('getting options data.....')
+
+		// generate the first dropdown option
+		// $("#changecompare3").append('<option selected value="--">--choose a plan--</option>');
+		$("#changecompare1").append('<option selected value="--" data-imagecss="dd-image" data-image="" data-description="If you are in synced layout mode, choose a plan that is in the same location.">Select a plan to compare</option>');
+		$("#changecompare2").append('<option selected value="--" data-imagecss="dd-image" data-image="" data-description="If you are in synced layout mode, choose a plan that is in the same location.">Select a plan to compare</option>');
+		$("#changecompare3").append('<option selected value="--" data-imagecss="dd-image" data-image="" data-description="If you are in synced layout mode, choose a plan that is in the same location.">Select a plan to compare</option>');
+
+			console.log(data.features)
+
 		var index = 0;
 		$.each(data.features,function(i,item){
-
+			console.log('in loop...' + i)
+			console.log(item)
 			// name is the Plan ID (eg: 0001, 0012, etc)
 			var name = item.attributes.Name;
 			aegaron.planIDforDDindexLookup.push(name);
@@ -187,13 +202,22 @@ aegaron.getAllPlansFromMosaic = function()
 			if(name == aegaron.mapid1){map1selected = 'selected'}
 			if(name == aegaron.mapid2){map3selected = 'selected'}
 
+			if(map3selected == '')
+			{
+				// $('#changecompare3').val('--').trigger('change')
+			}
+
+
+			console.log('here')
+
 			// add to the drop down choices for all 3 map divs
 			$("#changecompare1").append('<option '+map1selected+' value='+name+' data-imagecss="dd-image" data-image="'+thumb+'" data-description="'+text+'">'+title+'</option>');
 			$("#changecompare2").append('<option '+map1selected+' value='+name+' data-imagecss="dd-image" data-image="'+thumb+'" data-description="'+text+'">'+title+'</option>');
 			$("#changecompare3").append('<option '+map3selected+' value='+name+' data-imagecss="dd-image" data-image="'+thumb+'" data-description="'+text+'">'+title+'</option>');
+			console.log(name + '::' + map3selected)
 
 		});
-		
+		 
 		// Sort dropdowns alphabetically
 		aegaron.sortDropdown("#changecompare1");
 		aegaron.sortDropdown("#changecompare2");
@@ -220,15 +244,17 @@ aegaron.getAllPlansFromMosaic = function()
 		}
 		else
 		{
-			$("#changecompare2").msDropdown({visibleRows:4});
+			$("#changecompare2").msDropdown({visibleRows:6});
 			$('#changecompare2').on('change', function() {
 				aegaron.switchCompareMapDD(aegaron.map2,this.value);
 			});
+			$('#changecompare2').val(aegaron.mapid1).trigger('change')
 
-			$("#changecompare3").msDropdown({visibleRows:4});
+			$("#changecompare3").msDropdown({visibleRows:6});
 			$('#changecompare3').on('change', function() {
 				aegaron.switchCompareMapDD(aegaron.map3,this.value);
 			});
+			$('#changecompare3').val(aegaron.mapid1).trigger('change')
 		}
 
 		aegaron.resize();
@@ -679,6 +705,7 @@ aegaron.setUrlVars=function(evt)
 *****************************************/ 
 aegaron.switchCompareMapDD=function(map,data)
 {
+	console.log('switching map...')
 	if(map === aegaron.map1)
 	{
 		var compareID = data;
@@ -686,7 +713,14 @@ aegaron.switchCompareMapDD=function(map,data)
 		aegaron.setUrlVars();
 
 		var index = $.inArray(compareID,aegaron.planIDforDDindexLookup);
+		console.log('switched index: ' +index)
 
+		// if requested map does not exist (maybe it is section that has not been georeferenced)
+		if(index < 0)
+		{
+			alert('The plan you selected is not available in satellite mode. Select a different plan to view in Satellite mode.')
+			// aegaron.toggleGeo();
+		}
 		// zoom to extent of new map
 		// only if dual view
 		if(aegaron.viewState == 0)
