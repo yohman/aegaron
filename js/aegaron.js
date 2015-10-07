@@ -393,6 +393,8 @@ function redrawLayer(mapdivid)
 		// geo or nongeo?
 		if(aegaron.geo)
 		{
+			// add satellite base
+			aegaron.addSatelliteBaseMap(mapdivid);
 			var url = aegaron.arcgisserver_wms_url;
 		}
 		else
@@ -428,6 +430,23 @@ function redrawLayer(mapdivid)
 		// set the opacity
 		aegaron.layer1.setOpacity(aegaron.current_opacity);
 	}
+}
+
+aegaron.addSatelliteBaseMap = function(mapdivid)
+{
+	aegaron.satellite = new ol.layer.Tile({
+		visible: true,
+		preload: Infinity,
+		source: new ol.source.BingMaps({
+			key: 'Al3miDEvqOTQBtMvkY3vShhB3v1SDO3189Ni6RPF5NAraYTTKiLpmMjXgPqITabO',
+			imagerySet: 'Aerial',
+			// use maxZoom 19 to see stretched tiles instead of the BingMaps
+			// "no photos at this zoom level" tiles
+			maxZoom: 19
+		})
+	});
+	// add the plan overlay
+	mapdivid.getLayers().setAt(0, aegaron.satellite);
 }
 
 /****************************************
@@ -786,14 +805,15 @@ aegaron.setOpacity = function(val)
 	// set the slider postion too
 	var handleposition = 156-(this_opacity*190)+40+'px';
 
-	// handle2.style.left=handleposition;
+	// different layer needs to be made opaque depending on satellite mode
+	if(aegaron.geo) { layertomakeopaque = 2} else { layertomakeopaque = 0};
 
 	if(aegaron.map1.getLayers().getArray().length>0)
-		aegaron.map1.getLayers().getArray()[1].setOpacity(this_opacity)
+		aegaron.map1.getLayers().getArray()[layertomakeopaque].setOpacity(this_opacity)
 	if(aegaron.map2.getLayers().getArray().length>0)
-		aegaron.map2.getLayers().getArray()[1].setOpacity(this_opacity)
+		aegaron.map2.getLayers().getArray()[layertomakeopaque].setOpacity(this_opacity)
 	if(aegaron.map3.getLayers().getArray().length>0)
-		aegaron.map3.getLayers().getArray()[1].setOpacity(this_opacity)
+		aegaron.map3.getLayers().getArray()[layertomakeopaque].setOpacity(this_opacity)
 }
 
 aegaron.compareArc2DLCSFeed = function()
