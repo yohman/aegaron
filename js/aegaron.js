@@ -731,7 +731,7 @@ aegaron.switchCompareMapDD=function(map,data)
 		// if requested map does not exist (maybe it is section that has not been georeferenced)
 		if(index < 0)
 		{
-			alert('The plan you selected is not available in satellite mode. Select a different plan to view in Satellite mode.')
+			alert('The plan you selected is not available in satellite mode. Choose "view mode: no satellite" or select a different plan to view in Satellite mode')
 			// aegaron.toggleGeo();
 		}
 		// zoom to extent of new map
